@@ -34,10 +34,10 @@ func main() {
 	s := scheduler.New(storage)
 
 	if err := s.RunAfter(5*time.Second, Hello, "Rakan"); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	if err := s.RunEvery(5*time.Second, Recurring, "Rakan"); err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 	s.Start()
 	s.Wait()

@@ -29,6 +29,10 @@ func (scheduler *Scheduler) RunAt(time time.Time, function task.Function, params
 
 	task.NextRun = time
 
+	if err = scheduler.taskStore.Store(task); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -46,13 +50,21 @@ func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Funct
 	task.Duration = duration
 	task.NextRun = time.Now().Add(duration)
 
+	if err = scheduler.taskStore.Store(task); err != nil {
+		return err
+	}
+
 	return nil
 }
 
-func (scheduler *Scheduler) Start() {
+func (scheduler *Scheduler) Start() error {
 	// TODO: Implement signal handling
 
 	// Populate tasks from storage
+	if err := scheduler.populateTasks(); err != nil {
+		return nil
+	}
+	scheduler.runPending()
 
 	go func() {
 		ticker := time.NewTicker(1 * time.Second)
@@ -65,6 +77,8 @@ func (scheduler *Scheduler) Start() {
 			}
 		}
 	}()
+
+	return nil
 }
 
 func (scheduler *Scheduler) Wait() {
@@ -78,11 +92,17 @@ func (scheduler *Scheduler) populateTasks() error {
 	}
 
 	for _, dbTask := range tasks {
+		// Skip task which is not a recurring one and the NextRun has already passed
+		if !dbTask.IsRecurring && dbTask.NextRun.Before(time.Now()) {
+			continue
+		}
+
 		// If we can't find the task, it's been changed/removed by user
 		registeredTask, ok := scheduler.tasks[dbTask.Name]
 		if !ok {
 			continue
 		}
+
 		// Duration may have changed
 		if registeredTask.Duration != dbTask.Duration {
 			// Reschedule NextRun based on dbTask.LastRun + registeredTask.Duration
@@ -112,5 +132,6 @@ func (scheduler *Scheduler) makeTask(function task.Function, params ...task.Para
 	}
 
 	scheduler.tasks[task.Name] = task
+
 	return task, nil
 }
