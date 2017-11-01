@@ -118,6 +118,11 @@ type TaskStore interface {
 }
 #+END_SRC
 
+* TODOs
+- [ ] Store params with task
+- [ ] Enable non-executed, non-recurring task to be executed on startup.
+- [ ] Sqlite Storage tests
+- [ ] Redis Storage
 
 * Credit
 This package is heavily inspired by [[https://github.com/agronholm/apscheduler/][APScheduler]] for Python & [[https://github.com/jasonlvhit/gocron][GoCron]]
