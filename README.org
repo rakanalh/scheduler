@@ -1,6 +1,65 @@
 * Go Task Scheduler
 
+Go Task scheduler is a small package that enables you to execute callbacks (goroutines) after a pre-defined
+amount of time. GTS also provides task storage which is used to invoke callbacks for tasks which couldn't be executed
+during down-time as well as maintaining a history of the callbacks that got executed.
+
+* Installation
+#+BEGIN_SRC shell
+go get github.com/rakanalh/go-scheduler
+#+END_SRC
+
 * How To Use
+
+Instantiate a scheduler as follows:
+
+#+BEGIN_SRC go
+s := scheduler.New(storage)
+#+END_SRC
+
+GTS currently supports 2 kinds of storages:
+1. NoOpStorage: Does nothing
+2. SqliteStorage: Persists tasks into a SQLite3 database.
+
+If you'd like to use SqliteStorage
+#+BEGIN_SRC go
+storage := storage.NewSqlite3Storage(
+	storage.Sqlite3Config{
+		DbName: "db.store",
+	},
+)
+if err := storage.Connect(); err != nil {
+	log.Fatal("Could not connect to db", err)
+}
+
+if err := storage.Initialize(); err != nil {
+	log.Fatal("Could not intialize database", err)
+}
+#+END_SRC
+
+and then pass it to the scheduler.
+
+Scheduling tasks can be done in 3 ways:
+
+#+BEGIN_SRC go
+func MyFunc(arg1 string, arg2 string)
+s.RunAfter(5*time.Second, MyFunc, "Hello", "World")
+#+END_SRC
+Adds a task which is executed after 5 seconds.
+
+#+BEGIN_SRC go
+func MyFunc(arg1 string, arg2 string)
+s.RunAt(Time.Now.Add(24 * time.Hour, MyFunc, "Hello", "World")
+#+END_SRC
+Executes the task at a specific time.
+
+#+BEGIN_SRC go
+func MyFunc(arg1 string, arg2 string)
+s.RunEvery(1 * time.Minute, MyFunc, "Hello", "World")
+#+END_SRC
+Executes the task every 1 minute.
+
+* Example
 #+BEGIN_SRC go
 package main
 
@@ -13,12 +72,12 @@ import (
 	"github.com/rakanalh/scheduler/storage"
 )
 
-func Hello(name string) {
-	fmt.Println("Hello", name)
+func MyFuncWithoutArgs() {
+	fmt.Println("Executed, without any arguments")
 }
 
-func Recurring(name string) {
-	fmt.Println("Hello from recurring", name)
+func RecurringWithArgs(name string) {
+	fmt.Println("Recurring task, with 1 argument", name)
 }
 
 func main() {
@@ -37,10 +96,10 @@ func main() {
 
 	s := scheduler.New(storage)
 
-	if err := s.RunAfter(5*time.Second, Hello, "Rakan"); err != nil {
+	if err := s.RunAfter(5 * time.Second, MyFuncWithoutArgs); err != nil {
 		panic(err)
 	}
-	if err := s.RunEvery(5*time.Second, Recurring, "Rakan"); err != nil {
+	if err := s.RunEvery(1 * time.Minute, RecurringWithArgs, "SomeValue"); err != nil {
 		panic(err)
 	}
 	s.Start()
