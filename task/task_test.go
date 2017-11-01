@@ -49,7 +49,7 @@ func TestTaskRun(t *testing.T) {
 
 func TestTaskRunWithArgs(t *testing.T) {
 	mock := CallbackMock{}
-	mock.On("CallWithArgs", "Test", true).Return("Test", true)
+	mock.On("CallWithArgs", "Test", true).Return()
 
 	task, _ := newTask(mock.CallWithArgs, "Test", true)
 	task.Run()

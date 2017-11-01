@@ -18,9 +18,11 @@ func Recurring(name string) {
 }
 
 func main() {
-	storage := storage.NewSqlite3Storage(storage.Sqlite3Config{
-		DbName: "db.store",
-	})
+	storage := storage.NewSqlite3Storage(
+		storage.Sqlite3Config{
+			DbName: "db.store",
+		},
+	)
 	if err := storage.Connect(); err != nil {
 		log.Fatal("Could not connect to db", err)
 	}

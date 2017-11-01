@@ -10,7 +10,6 @@ func (m *CallbackMock) CallNoArgs() {
 	m.Called()
 }
 
-func (m *CallbackMock) CallWithArgs(arg1 string, arg2 bool) (string, bool) {
-	args := m.Called(arg1, arg2)
-	return args.String(0), args.Bool(1)
+func (m *CallbackMock) CallWithArgs(arg1 string, arg2 bool) {
+	m.Called(arg1, arg2)
 }

@@ -9,6 +9,11 @@ import (
 	"github.com/rakanalh/scheduler/task"
 )
 
+const (
+	StatusPending = iota
+	StatusDone
+)
+
 type Sqlite3Config struct {
 	DbName string
 }
@@ -44,7 +49,8 @@ func (sqlite *Sqlite3Storage) Initialize() error {
         name text,
         duration integer,
         next_run text,
-        is_recurring integer
+        is_recurring integer,
+        status integer
     );
 	`
 	_, err := sqlite.db.Exec(sqlStmt)
@@ -60,9 +66,10 @@ func (sqlite Sqlite3Storage) Store(task *task.ScheduledTask) error {
 	if err != nil {
 		return err
 	}
+	// TODO: Check if task already exists and update it if it does.
 	stmt, err := tx.Prepare(`
-        INSERT INTO task_store(name, duration, next_run, is_recurring)
-        VALUES(?, ?, ?, ?, ?)`)
+        INSERT INTO task_store(name, duration, next_run, is_recurring, status)
+        VALUES(?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return err
@@ -75,6 +82,7 @@ func (sqlite Sqlite3Storage) Store(task *task.ScheduledTask) error {
 		task.Duration,
 		task.NextRun,
 		task.IsRecurring,
+		StatusPending,
 	)
 	if err != nil {
 		return err
@@ -89,7 +97,7 @@ func (sqlite Sqlite3Storage) Store(task *task.ScheduledTask) error {
 
 func (sqlite Sqlite3Storage) Fetch() ([]*task.ScheduledTask, error) {
 	rows, err := sqlite.db.Query(`
-        SELECT name, duration, next_run, is_recurring
+        SELECT name, duration, next_run, is_recurring, status
         FROM task_store`)
 
 	if err != nil {
@@ -98,11 +106,14 @@ func (sqlite Sqlite3Storage) Fetch() ([]*task.ScheduledTask, error) {
 	defer rows.Close()
 
 	for rows.Next() {
-		var duration, isRecurring int
+		var duration, isRecurring, status int
 		var name, nextRun string
 		err = rows.Scan(&name, &duration, nextRun, isRecurring)
 		if err != nil {
 			log.Fatal(err)
+		}
+		if status == StatusDone {
+			continue
 		}
 		fmt.Println(name, duration, nextRun, isRecurring)
 	}
