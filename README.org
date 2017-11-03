@@ -113,8 +113,8 @@ GTS supports the ability to provide a custom storage, the newly created storage 
 
 #+BEGIN_SRC go
 type TaskStore interface {
-	Store(task *task.ScheduledTask) error
-	Fetch() ([]*task.ScheduledTask, error)
+	Store(task *task.Task) error
+	Fetch() ([]*task.Task, error)
 }
 #+END_SRC
 

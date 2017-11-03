@@ -8,7 +8,7 @@ import (
 )
 
 type Scheduler struct {
-	tasks     map[string]*task.ScheduledTask
+	tasks     map[string]*task.Task
 	taskStore storage.TaskStore
 	stopChan  chan bool
 }
@@ -17,7 +17,7 @@ func New(store storage.TaskStore) Scheduler {
 	return Scheduler{
 		taskStore: store,
 		stopChan:  make(chan bool),
-		tasks:     make(map[string]*task.ScheduledTask),
+		tasks:     make(map[string]*task.Task),
 	}
 }
 
@@ -125,8 +125,8 @@ func (scheduler *Scheduler) runPending() {
 	}
 }
 
-func (scheduler *Scheduler) makeTask(function task.Function, params ...task.Param) (*task.ScheduledTask, error) {
-	task, err := task.NewTask(function, params...)
+func (scheduler *Scheduler) makeTask(function task.Function, params ...task.Param) (*task.Task, error) {
+	task, err := task.New(function, params...)
 	if err != nil {
 		return nil, err
 	}

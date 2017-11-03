@@ -18,21 +18,21 @@ type Schedule struct {
 	Duration    time.Duration
 }
 
-type ScheduledTask struct {
+type Task struct {
 	Schedule
 	Name   string
 	Func   Function
 	Params []Param
 }
 
-func NewTask(function Function, params ...Param) (*ScheduledTask, error) {
+func New(function Function, params ...Param) (*Task, error) {
 	funcValue := reflect.ValueOf(function)
 	if funcValue.Kind() != reflect.Func {
 		return nil, fmt.Errorf("Provided function value is not an actual function")
 	}
 
 	name := runtime.FuncForPC(funcValue.Pointer()).Name()
-	return &ScheduledTask{
+	return &Task{
 		Name:   name,
 		Func:   function,
 		Params: params,
@@ -42,12 +42,12 @@ func NewTask(function Function, params ...Param) (*ScheduledTask, error) {
 	}, nil
 }
 
-func (task *ScheduledTask) IsDue() bool {
+func (task *Task) IsDue() bool {
 	timeNow := time.Now()
 	return timeNow == task.NextRun || timeNow.After(task.NextRun)
 }
 
-func (task *ScheduledTask) Run() {
+func (task *Task) Run() {
 	function := reflect.ValueOf(task.Func)
 	params := make([]reflect.Value, len(task.Params))
 	for i, param := range task.Params {
@@ -58,7 +58,7 @@ func (task *ScheduledTask) Run() {
 	task.scheduleNextRun()
 }
 
-func (task *ScheduledTask) scheduleNextRun() {
+func (task *Task) scheduleNextRun() {
 	if !task.IsRecurring {
 		return
 	}

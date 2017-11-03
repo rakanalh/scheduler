@@ -62,7 +62,7 @@ func (sqlite *Sqlite3Storage) Initialize() error {
 	return nil
 }
 
-func (sqlite Sqlite3Storage) Store(task *task.ScheduledTask) error {
+func (sqlite Sqlite3Storage) Store(task *task.Task) error {
 	var count int
 	rows, err := sqlite.db.Query("SELECT count(*) FROM task_store WHERE name=?", task.Name)
 	if err == nil {
@@ -77,7 +77,7 @@ func (sqlite Sqlite3Storage) Store(task *task.ScheduledTask) error {
 	return sqlite.insert(task)
 }
 
-func (sqlite Sqlite3Storage) Fetch() ([]*task.ScheduledTask, error) {
+func (sqlite Sqlite3Storage) Fetch() ([]*task.Task, error) {
 	rows, err := sqlite.db.Query(`
         SELECT name, duration, last_run, next_run, is_recurring
         FROM task_store`)
@@ -87,14 +87,14 @@ func (sqlite Sqlite3Storage) Fetch() ([]*task.ScheduledTask, error) {
 	}
 	defer rows.Close()
 
-	var tasks []*task.ScheduledTask
+	var tasks []*task.Task
 
 	for rows.Next() {
 		var duration, isRecurring, status int
 		var name, lastRunStr, nextRunStr string
 		err = rows.Scan(&name, &duration, &lastRunStr, &nextRunStr, &isRecurring)
 		if err != nil {
-			return []*task.ScheduledTask{}, err
+			return []*task.Task{}, err
 		}
 		if status == StatusDone {
 			continue
@@ -102,15 +102,15 @@ func (sqlite Sqlite3Storage) Fetch() ([]*task.ScheduledTask, error) {
 
 		lastRun, err := time.Parse(time.RFC3339, lastRunStr)
 		if err != nil {
-			return []*task.ScheduledTask{}, err
+			return []*task.Task{}, err
 		}
 
 		nextRun, err := time.Parse(time.RFC3339, nextRunStr)
 		if err != nil {
-			return []*task.ScheduledTask{}, err
+			return []*task.Task{}, err
 		}
 
-		tasks = append(tasks, &task.ScheduledTask{
+		tasks = append(tasks, &task.Task{
 			Name: name,
 			Schedule: task.Schedule{
 				Duration:    time.Duration(duration),
@@ -127,7 +127,7 @@ func (sqlite Sqlite3Storage) Fetch() ([]*task.ScheduledTask, error) {
 	return tasks, nil
 }
 
-func (sqlite *Sqlite3Storage) insert(task *task.ScheduledTask) error {
+func (sqlite *Sqlite3Storage) insert(task *task.Task) error {
 	stmt, err := sqlite.db.Prepare(`
         INSERT INTO task_store(name, duration, last_run, next_run, is_recurring)
         VALUES(?, ?, ?, ?, ?)`)
@@ -152,7 +152,7 @@ func (sqlite *Sqlite3Storage) insert(task *task.ScheduledTask) error {
 	return nil
 }
 
-func (sqlite *Sqlite3Storage) update(task *task.ScheduledTask) error {
+func (sqlite *Sqlite3Storage) update(task *task.Task) error {
 	stmt, err := sqlite.db.Prepare(`
         UPDATE task_store SET duration=?, last_run=?, next_run=?, is_recurring=?
         WHERE name=?`)

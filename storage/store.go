@@ -3,6 +3,6 @@ package storage
 import "github.com/rakanalh/scheduler/task"
 
 type TaskStore interface {
-	Store(task *task.ScheduledTask) error
-	Fetch() ([]*task.ScheduledTask, error)
+	Store(task *task.Task) error
+	Fetch() ([]*task.Task, error)
 }
