@@ -1,6 +1,9 @@
 package scheduler
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/rakanalh/scheduler/storage"
@@ -58,7 +61,8 @@ func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Funct
 }
 
 func (scheduler *Scheduler) Start() error {
-	// TODO: Implement signal handling
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
 	// Populate tasks from storage
 	if err := scheduler.populateTasks(); err != nil {
@@ -72,13 +76,19 @@ func (scheduler *Scheduler) Start() error {
 			select {
 			case <-ticker.C:
 				scheduler.runPending()
+			case <-sigChan:
+				scheduler.stopChan <- true
 			case <-scheduler.stopChan:
-				return
+				close(scheduler.stopChan)
 			}
 		}
 	}()
 
 	return nil
+}
+
+func (scheduler *Scheduler) Stop() {
+	scheduler.stopChan <- true
 }
 
 func (scheduler *Scheduler) Wait() {
