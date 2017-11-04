@@ -1,11 +1,15 @@
 package task
 
 import (
+	"crypto/sha1"
 	"fmt"
+	"io"
 	"reflect"
 	"runtime"
 	"time"
 )
+
+type TaskID string
 
 type Function interface{}
 
@@ -20,9 +24,9 @@ type Schedule struct {
 
 type Task struct {
 	Schedule
-	Name   string
-	Func   Function
-	Params []Param
+	FuncName string
+	Func     Function
+	Params   []Param
 }
 
 func New(function Function, params ...Param) (*Task, error) {
@@ -33,9 +37,9 @@ func New(function Function, params ...Param) (*Task, error) {
 
 	name := runtime.FuncForPC(funcValue.Pointer()).Name()
 	return &Task{
-		Name:   name,
-		Func:   function,
-		Params: params,
+		FuncName: name,
+		Func:     function,
+		Params:   params,
 		Schedule: Schedule{
 			IsRecurring: false,
 		},
@@ -56,6 +60,15 @@ func (task *Task) Run() {
 	function.Call(params)
 
 	task.scheduleNextRun()
+}
+
+func (task *Task) Hash() TaskID {
+	hash := sha1.New()
+	io.WriteString(hash, task.FuncName)
+	io.WriteString(hash, fmt.Sprintf("%+v", task.Params))
+	io.WriteString(hash, fmt.Sprintf("%s", task.Schedule.Duration))
+	io.WriteString(hash, fmt.Sprintf("%t", task.Schedule.IsRecurring))
+	return TaskID(hash.Sum(nil))
 }
 
 func (task *Task) scheduleNextRun() {

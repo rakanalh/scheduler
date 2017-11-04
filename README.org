@@ -1,6 +1,6 @@
 * Go Task Scheduler
 
-Go Task scheduler is a small package that enables you to execute callbacks (goroutines) after a pre-defined
+Go Task scheduler is a small library that you can use within your application that enables you to execute callbacks (goroutines) after a pre-defined
 amount of time. GTS also provides task storage which is used to invoke callbacks for tasks which couldn't be executed
 during down-time as well as maintaining a history of the callbacks that got executed.
 
@@ -41,71 +41,27 @@ and then pass it to the scheduler.
 
 Scheduling tasks can be done in 3 ways:
 
+** Execute a task which after 5 seconds.
 #+BEGIN_SRC go
 func MyFunc(arg1 string, arg2 string)
-s.RunAfter(5*time.Second, MyFunc, "Hello", "World")
+taskID := s.RunAfter(5*time.Second, MyFunc, "Hello", "World")
 #+END_SRC
-Adds a task which is executed after 5 seconds.
 
+** Execute a task at a specific time.
 #+BEGIN_SRC go
 func MyFunc(arg1 string, arg2 string)
-s.RunAt(Time.Now.Add(24 * time.Hour, MyFunc, "Hello", "World")
+taskID := s.RunAt(Time.Now.Add(24 * time.Hour, MyFunc, "Hello", "World")
 #+END_SRC
-Executes the task at a specific time.
 
+** Execute a task every 1 minute.
 #+BEGIN_SRC go
 func MyFunc(arg1 string, arg2 string)
-s.RunEvery(1 * time.Minute, MyFunc, "Hello", "World")
+taskID := s.RunEvery(1 * time.Minute, MyFunc, "Hello", "World")
 #+END_SRC
-Executes the task every 1 minute.
 
-* Example
-#+BEGIN_SRC go
-package main
+* Examples
 
-import (
-	"fmt"
-	"log"
-	"time"
-
-	"github.com/rakanalh/scheduler"
-	"github.com/rakanalh/scheduler/storage"
-)
-
-func MyFuncWithoutArgs() {
-	fmt.Println("Executed, without any arguments")
-}
-
-func RecurringWithArgs(name string) {
-	fmt.Println("Recurring task, with 1 argument", name)
-}
-
-func main() {
-	storage := storage.NewSqlite3Storage(
-		storage.Sqlite3Config{
-			DbName: "db.store",
-		},
-	)
-	if err := storage.Connect(); err != nil {
-		log.Fatal("Could not connect to db", err)
-	}
-
-	if err := storage.Initialize(); err != nil {
-		log.Fatal("Could not intialize database", err)
-	}
-
-	s := scheduler.New(storage)
-
-	if err := s.RunAfter(5 * time.Second, MyFuncWithoutArgs); err != nil {
-		panic(err)
-	}
-	if err := s.RunEvery(1 * time.Minute, RecurringWithArgs, "SomeValue"); err != nil {
-		panic(err)
-	}
-	s.Start()
-	s.Wait()
-}
-#+END_SRC
+The [[https://github.com/rakanalh/go-scheduler/tree/master/_example/][Examples]] folder contains a bunch of code samples you can look into.
 
 * Custom Storage
 
@@ -114,13 +70,12 @@ GTS supports the ability to provide a custom storage, the newly created storage 
 #+BEGIN_SRC go
 type TaskStore interface {
 	Store(task *task.Task) error
+        Remove(task *task.Task) error
 	Fetch() ([]*task.Task, error)
 }
 #+END_SRC
 
 * TODOs
-- [ ] Store params with task
-- [ ] Enable non-executed, non-recurring task to be executed on startup.
 - [ ] Sqlite Storage tests
 - [ ] Redis Storage
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -10,11 +9,11 @@ import (
 )
 
 func TaskWithoutArgs() {
-	fmt.Println("TaskWithoutArgs is executed")
+	log.Println("TaskWithoutArgs is executed")
 }
 
 func TaskWithArgs(message string) {
-	fmt.Println("TaskWithArgs is executed. message:", name)
+	log.Println("TaskWithArgs is executed. message:", message)
 }
 
 func main() {
@@ -34,10 +33,18 @@ func main() {
 
 	s := scheduler.New(storage)
 
-	if err := s.RunAfter(5*time.Second, TaskWithoutArgs); err != nil {
+	// Start a task without arguments
+	if _, err := s.RunAfter(30*time.Second, TaskWithoutArgs); err != nil {
 		log.Fatal(err)
 	}
-	if err := s.RunEvery(5*time.Second, TaskWithArgs, "Hello from recurring task"); err != nil {
+
+	// Start a task with arguments
+	if _, err := s.RunEvery(5*time.Second, TaskWithArgs, "Hello from recurring task 1"); err != nil {
+		log.Fatal(err)
+	}
+
+	// Start the same task as above with a different argument
+	if _, err := s.RunEvery(10*time.Second, TaskWithArgs, "Hello from recurring task 2"); err != nil {
 		log.Fatal(err)
 	}
 	s.Start()

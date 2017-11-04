@@ -20,13 +20,18 @@ type Sqlite3Config struct {
 }
 
 type Sqlite3Storage struct {
-	config Sqlite3Config
-	db     *sql.DB
+	config    Sqlite3Config
+	db        *sql.DB
+	marshaler ParamMarshaler
 }
 
-func NewSqlite3Storage(config Sqlite3Config) Sqlite3Storage {
+func NewSqlite3Storage(config Sqlite3Config, marshaler ParamMarshaler) Sqlite3Storage {
+	if marshaler == nil {
+		marshaler = NewMarshaler()
+	}
 	return Sqlite3Storage{
-		config: config,
+		config:    config,
+		marshaler: marshaler,
 	}
 }
 
@@ -48,10 +53,12 @@ func (sqlite *Sqlite3Storage) Initialize() error {
     CREATE TABLE IF NOT EXISTS task_store (
         id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
         name text,
+        params text,
         duration integer,
         last_run text,
         next_run text,
-        is_recurring integer
+        is_recurring integer,
+        hash text
     );
 	`
 	_, err := sqlite.db.Exec(sqlStmt)
@@ -62,37 +69,57 @@ func (sqlite *Sqlite3Storage) Initialize() error {
 	return nil
 }
 
-func (sqlite Sqlite3Storage) Store(task *task.Task) error {
+func (sqlite Sqlite3Storage) Add(task *task.Task) error {
 	var count int
-	rows, err := sqlite.db.Query("SELECT count(*) FROM task_store WHERE name=?", task.Name)
+	rows, err := sqlite.db.Query("SELECT count(*) FROM task_store WHERE hash=?", task.Hash())
 	if err == nil {
 		rows.Next()
 		_ = rows.Scan(&count)
 	}
-	rows.Close()
+	_ = rows.Close()
 
-	if count > 0 {
-		return sqlite.update(task)
+	if count == 0 {
+		return sqlite.insert(task)
 	}
-	return sqlite.insert(task)
+	return nil
+}
+
+func (sqlite Sqlite3Storage) Remove(task *task.Task) error {
+	stmt, err := sqlite.db.Prepare(`DELETE FROM task_store WHERE hash=?`)
+
+	if err != nil {
+		return fmt.Errorf("Error while pareparing delete task statement: %s", err)
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(
+		task.Hash(),
+	)
+	if err != nil {
+		return fmt.Errorf("Error while deleting task: %s", err)
+	}
+
+	return nil
 }
 
 func (sqlite Sqlite3Storage) Fetch() ([]*task.Task, error) {
 	rows, err := sqlite.db.Query(`
-        SELECT name, duration, last_run, next_run, is_recurring
+        SELECT name, params, duration, last_run, next_run, is_recurring
         FROM task_store`)
 
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer rows.Close()
 
 	var tasks []*task.Task
 
 	for rows.Next() {
 		var duration, isRecurring, status int
-		var name, lastRunStr, nextRunStr string
-		err = rows.Scan(&name, &duration, &lastRunStr, &nextRunStr, &isRecurring)
+		var name, paramsStr, lastRunStr, nextRunStr string
+		err = rows.Scan(&name, &paramsStr, &duration, &lastRunStr, &nextRunStr, &isRecurring)
 		if err != nil {
 			return []*task.Task{}, err
 		}
@@ -110,8 +137,14 @@ func (sqlite Sqlite3Storage) Fetch() ([]*task.Task, error) {
 			return []*task.Task{}, err
 		}
 
+		params, err := sqlite.marshaler.Unmarshal(paramsStr)
+		if err != nil {
+			return []*task.Task{}, err
+		}
+
 		tasks = append(tasks, &task.Task{
-			Name: name,
+			FuncName: name,
+			Params:   params,
 			Schedule: task.Schedule{
 				Duration:    time.Duration(duration),
 				IsRecurring: isRecurring == 1,
@@ -129,8 +162,8 @@ func (sqlite Sqlite3Storage) Fetch() ([]*task.Task, error) {
 
 func (sqlite *Sqlite3Storage) insert(task *task.Task) error {
 	stmt, err := sqlite.db.Prepare(`
-        INSERT INTO task_store(name, duration, last_run, next_run, is_recurring)
-        VALUES(?, ?, ?, ?, ?)`)
+        INSERT INTO task_store(name, params, duration, last_run, next_run, is_recurring, hash)
+        VALUES(?, ?, ?, ?, ?, ?, ?)`)
 
 	if err != nil {
 		return fmt.Errorf("Error while pareparing insert task statement: %s", err)
@@ -138,40 +171,22 @@ func (sqlite *Sqlite3Storage) insert(task *task.Task) error {
 
 	defer stmt.Close()
 
+	params, err := sqlite.marshaler.Marshal(task.Params)
+	if err != nil {
+		return err
+	}
+
 	_, err = stmt.Exec(
-		task.Name,
+		task.FuncName,
+		params,
 		task.Duration,
 		task.LastRun.Format(time.RFC3339),
 		task.NextRun.Format(time.RFC3339),
 		task.IsRecurring,
+		task.Hash(),
 	)
 	if err != nil {
 		return fmt.Errorf("Error while inserting task: %s", err)
-	}
-
-	return nil
-}
-
-func (sqlite *Sqlite3Storage) update(task *task.Task) error {
-	stmt, err := sqlite.db.Prepare(`
-        UPDATE task_store SET duration=?, last_run=?, next_run=?, is_recurring=?
-        WHERE name=?`)
-
-	if err != nil {
-		return fmt.Errorf("Error while preparing update task statement: %s", err)
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(
-		task.Duration,
-		task.LastRun.Format(time.RFC3339),
-		task.NextRun.Format(time.RFC3339),
-		task.IsRecurring,
-		task.Name,
-	)
-	if err != nil {
-		return fmt.Errorf("Error while updating task: %s", err)
 	}
 
 	return nil

@@ -11,10 +11,14 @@ func NewNoOpStorage() NoOpStorage {
 	return NoOpStorage{}
 }
 
-func (noop NoOpStorage) Store(task *task.Task) error {
+func (noop NoOpStorage) Add(task *task.Task) error {
 	return nil
 }
 
 func (noop NoOpStorage) Fetch() ([]*task.Task, error) {
-	return nil, nil
+	return []*task.Task{}, nil
+}
+
+func (noop NoOpStorage) Remove(task *task.Task) error {
+	return nil
 }

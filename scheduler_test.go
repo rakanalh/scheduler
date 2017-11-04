@@ -15,12 +15,12 @@ func TestRunAt(t *testing.T) {
 
 	timeNow := time.Now()
 	scheduler := New(storage.NoOpStorage{})
-	err := scheduler.RunAt(timeNow, mock.CallNoArgs)
+	taskID, err := scheduler.RunAt(timeNow, mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
 	}
 
-	err = scheduler.RunAt(timeNow, "InvalidFunction")
+	_, err = scheduler.RunAt(timeNow, "InvalidFunction")
 	if err == nil {
 		t.Error("InvalidFunction should have failed RunAt")
 	}
@@ -29,7 +29,7 @@ func TestRunAt(t *testing.T) {
 		t.Error("There should only be one task")
 	}
 
-	if scheduler.tasks[TestTaskName].NextRun != timeNow {
+	if scheduler.tasks[taskID].NextRun != timeNow {
 		t.Error("The task's NextRun should be equal to passed parameter")
 	}
 }
@@ -37,11 +37,11 @@ func TestRunAt(t *testing.T) {
 func TestRunAfter(t *testing.T) {
 	mock := task.CallbackMock{}
 	scheduler := New(storage.NoOpStorage{})
-	err := scheduler.RunAfter(5, mock.CallNoArgs)
+	_, err := scheduler.RunAfter(5, mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
 	}
-	err = scheduler.RunAfter(5, "InvalidFunction")
+	_, err = scheduler.RunAfter(5, "InvalidFunction")
 	if err == nil {
 		t.Error()
 	}
@@ -50,17 +50,17 @@ func TestRunAfter(t *testing.T) {
 func TestRunEvery(t *testing.T) {
 	mock := task.CallbackMock{}
 	scheduler := New(storage.NoOpStorage{})
-	err := scheduler.RunEvery(5, mock.CallNoArgs)
+	taskID, err := scheduler.RunEvery(5, mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
 	}
 
-	err = scheduler.RunEvery(5, "InvalidFunction")
+	_, err = scheduler.RunEvery(5, "InvalidFunction")
 	if err == nil {
 		t.Error("InvalidFunction should have failed RunAt")
 	}
 
-	if !scheduler.tasks[TestTaskName].IsRecurring {
+	if !scheduler.tasks[taskID].IsRecurring {
 		t.Error()
 	}
 }
@@ -68,7 +68,7 @@ func TestRunEvery(t *testing.T) {
 func TestRunPending(t *testing.T) {
 	mock := task.CallbackMock{}
 	scheduler := New(storage.NoOpStorage{})
-	err := scheduler.RunAt(time.Now(), mock.CallNoArgs)
+	_, err := scheduler.RunAt(time.Now(), mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
 	}
@@ -85,7 +85,7 @@ func TestRunPending(t *testing.T) {
 	}
 
 	// Test again with a recurring task
-	_ = scheduler.RunEvery(5, mock.CallNoArgs)
+	_, _ = scheduler.RunEvery(5, mock.CallNoArgs)
 
 	mock.On("CallNoArgs").Return()
 
@@ -103,14 +103,14 @@ func TestStart(t *testing.T) {
 	mock.On("CallNoArgs").Return()
 
 	scheduler := New(storage.NoOpStorage{})
-	err := scheduler.RunAt(time.Now(), mock.CallNoArgs)
+	_, err := scheduler.RunAt(time.Now(), mock.CallNoArgs)
 	if err != nil {
 		t.Error("Should not fail")
 	}
 	scheduler.Start()
 
 	time.AfterFunc(2*time.Second, func() {
-		close(scheduler.stopChan)
+		scheduler.Stop()
 	})
 	scheduler.Wait()
 	mock.On("CallNoArgs").Return()
