@@ -9,19 +9,20 @@ import (
 	"github.com/rakanalh/scheduler/storage"
 )
 
-func Hello(name string) {
-	fmt.Println("Hello", name)
+func TaskWithoutArgs() {
+	fmt.Println("TaskWithoutArgs is executed")
 }
 
-func Recurring(name string) {
-	fmt.Println("Hello from recurring", name)
+func TaskWithArgs(message string) {
+	fmt.Println("TaskWithArgs is executed. message:", name)
 }
 
 func main() {
 	storage := storage.NewSqlite3Storage(
 		storage.Sqlite3Config{
-			DbName: "db.store",
+			DbName: "task_store.db",
 		},
+		storage.NewMarshaler(),
 	)
 	if err := storage.Connect(); err != nil {
 		log.Fatal("Could not connect to db", err)
@@ -33,10 +34,10 @@ func main() {
 
 	s := scheduler.New(storage)
 
-	if err := s.RunAfter(5*time.Second, Hello, "Rakan"); err != nil {
+	if err := s.RunAfter(5*time.Second, TaskWithoutArgs); err != nil {
 		log.Fatal(err)
 	}
-	if err := s.RunEvery(5*time.Second, Recurring, "Rakan"); err != nil {
+	if err := s.RunEvery(5*time.Second, TaskWithArgs, "Hello from recurring task"); err != nil {
 		log.Fatal(err)
 	}
 	s.Start()
