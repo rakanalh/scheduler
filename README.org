@@ -4,6 +4,14 @@ Go Task scheduler is a small library that you can use within your application th
 amount of time. GTS also provides task storage which is used to invoke callbacks for tasks which couldn't be executed
 during down-time as well as maintaining a history of the callbacks that got executed.
 
+** Features
+- Execute tasks based after a specific duration or at a specific point in time
+- Job stores for history & recovery, provided stores out of the box:
+ - Sqlite3
+ - Redis (Coming soon)
+- Customizable parameter marshaler to enable complex param storage
+ - The provided out of the box marshaler uses JSON.
+
 * Installation
 #+BEGIN_SRC shell
 go get github.com/rakanalh/go-scheduler
@@ -14,7 +22,7 @@ go get github.com/rakanalh/go-scheduler
 Instantiate a scheduler as follows:
 
 #+BEGIN_SRC go
-s := scheduler.New(storage)
+s := scheduler.New(storage, nil) // Use the provided marshaler
 #+END_SRC
 
 GTS currently supports 2 kinds of storages:
@@ -27,6 +35,7 @@ storage := storage.NewSqlite3Storage(
 	storage.Sqlite3Config{
 		DbName: "db.store",
 	},
+        storage.NewMarshaler() //
 )
 if err := storage.Connect(); err != nil {
 	log.Fatal("Could not connect to db", err)
