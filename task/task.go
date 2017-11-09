@@ -5,15 +5,10 @@ import (
 	"fmt"
 	"io"
 	"reflect"
-	"runtime"
 	"time"
 )
 
 type TaskID string
-
-type Function interface{}
-
-type Param interface{}
 
 type Schedule struct {
 	IsRecurring bool
@@ -24,26 +19,23 @@ type Schedule struct {
 
 type Task struct {
 	Schedule
-	FuncName string
-	Func     Function
-	Params   []Param
+	Func   FunctionMeta
+	Params []Param
 }
 
-func New(function Function, params ...Param) (*Task, error) {
-	funcValue := reflect.ValueOf(function)
-	if funcValue.Kind() != reflect.Func {
-		return nil, fmt.Errorf("Provided function value is not an actual function")
-	}
-
-	name := runtime.FuncForPC(funcValue.Pointer()).Name()
+func New(function FunctionMeta, params []Param) *Task {
 	return &Task{
-		FuncName: name,
+		Func:   function,
+		Params: params,
+	}
+}
+
+func NewWithSchedule(function FunctionMeta, params []Param, schedule Schedule) *Task {
+	return &Task{
 		Func:     function,
 		Params:   params,
-		Schedule: Schedule{
-			IsRecurring: false,
-		},
-	}, nil
+		Schedule: schedule,
+	}
 }
 
 func (task *Task) IsDue() bool {
@@ -52,7 +44,7 @@ func (task *Task) IsDue() bool {
 }
 
 func (task *Task) Run() {
-	function := reflect.ValueOf(task.Func)
+	function := reflect.ValueOf(task.Func.function)
 	params := make([]reflect.Value, len(task.Params))
 	for i, param := range task.Params {
 		params[i] = reflect.ValueOf(param)
@@ -64,7 +56,7 @@ func (task *Task) Run() {
 
 func (task *Task) Hash() TaskID {
 	hash := sha1.New()
-	io.WriteString(hash, task.FuncName)
+	io.WriteString(hash, task.Func.Name)
 	io.WriteString(hash, fmt.Sprintf("%+v", task.Params))
 	io.WriteString(hash, fmt.Sprintf("%s", task.Schedule.Duration))
 	io.WriteString(hash, fmt.Sprintf("%t", task.Schedule.IsRecurring))
