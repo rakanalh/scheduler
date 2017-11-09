@@ -9,8 +9,6 @@ during down-time as well as maintaining a history of the callbacks that got exec
 - Job stores for history & recovery, provided stores out of the box:
  - Sqlite3
  - Redis (Coming soon)
-- Customizable parameter marshaler to enable complex param storage
- - The provided out of the box marshaler uses JSON.
 
 * Installation
 #+BEGIN_SRC shell
@@ -35,7 +33,6 @@ storage := storage.NewSqlite3Storage(
 	storage.Sqlite3Config{
 		DbName: "db.store",
 	},
-        storage.NewMarshaler() //
 )
 if err := storage.Connect(); err != nil {
 	log.Fatal("Could not connect to db", err)

@@ -2,7 +2,7 @@ package scheduler
 
 import (
 	"encoding/json"
-	"log"
+	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -112,7 +112,8 @@ func paramsToString(params []task.Param) (string, error) {
 		}
 		paramsList = append(paramsList, string(paramStr))
 	}
-	return strings.Join(paramsList, ","), nil
+	data, err := json.Marshal(paramsList)
+	return string(data), err
 }
 
 func paramsFromString(funcMeta task.FunctionMeta, payload string) ([]task.Param, error) {
@@ -121,13 +122,18 @@ func paramsFromString(funcMeta task.FunctionMeta, payload string) ([]task.Param,
 		return params, nil
 	}
 	paramTypes := funcMeta.Params()
-	paramsStrings := strings.Split(payload, ",")
+	var paramsStrings []string
+	err := json.Unmarshal([]byte(payload), &paramsStrings)
+	if err != nil {
+		return params, err
+	}
 	for i, paramStr := range paramsStrings {
 		paramType := paramTypes[i]
 		target := reflect.New(paramType)
 		err := json.Unmarshal([]byte(paramStr), target.Interface())
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(paramStr)
+			return params, err
 		}
 		param := reflect.Indirect(target).Interface().(task.Param)
 		params = append(params, param)

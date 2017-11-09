@@ -60,7 +60,7 @@ func (task *Task) Hash() TaskID {
 	io.WriteString(hash, fmt.Sprintf("%+v", task.Params))
 	io.WriteString(hash, fmt.Sprintf("%s", task.Schedule.Duration))
 	io.WriteString(hash, fmt.Sprintf("%t", task.Schedule.IsRecurring))
-	return TaskID(hash.Sum(nil))
+	return TaskID(fmt.Sprintf("%x", hash.Sum(nil)))
 }
 
 func (task *Task) scheduleNextRun() {

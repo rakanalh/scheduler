@@ -27,6 +27,7 @@ type Person struct {
 func CheckIfBirthday(person Person) {
 	if time.Now().Format(DateLayout) == person.DateOfBirth.Format(DateLayout) {
 		fmt.Println("Happy birthday,", person.Name)
+		return
 	}
 	fmt.Println("Still waiting for your birthday")
 }
@@ -36,7 +37,6 @@ func main() {
 		storage.Sqlite3Config{
 			DbName: "task_store.db",
 		},
-		storage.NewMarshaler(),
 	)
 	if err := storage.Connect(); err != nil {
 		log.Fatal("Could not connect to db", err)
@@ -51,7 +51,7 @@ func main() {
 	dob, _ := time.Parse(DateLayout, time.Now().Format(DateLayout))
 	person := Person{
 		ID:          "123-456",
-		Name:        "John Smith",
+		Name:        "John Smith 2",
 		DateOfBirth: dob,
 		Gender:      Male,
 	}

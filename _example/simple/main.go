@@ -21,7 +21,6 @@ func main() {
 		storage.Sqlite3Config{
 			DbName: "task_store.db",
 		},
-		storage.NewMarshaler(),
 	)
 	if err := storage.Connect(); err != nil {
 		log.Fatal("Could not connect to db", err)
