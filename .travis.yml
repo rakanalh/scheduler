@@ -1,15 +1,9 @@
 language: go
 before_install:
-  - go get github.com/modocache/gover
+  - go get github.com/rakanalh/scheduler
 script:
-  # Vet examines Go source code and reports suspicious construct
-  - go vet github.com/rakanalh/go-scheduler/...
   # Run the unit tests suite
-  - go test -v ./...
-  # Collect coverage reports
-  - go list -f '{{if len .TestGoFiles}}"go test -coverprofile={{.Dir}}/.coverprofile {{.ImportPath}}"{{end}}' ./... | xargs -i sh -c {}
-  # Merge coverage reports
-  - gover . coverprofile.txt
+  - bash ./test.sh
 after_success:
   # Send coverage reports to Codecov
-  - bash < (curl -s https://codecov.io/bash) -f coverprofile.txt
+  - curl -s https://codecov.io/bash | bash -s - -f coverage.txt -t 776745e2-1ee4-4553-8c73-21390e96d284

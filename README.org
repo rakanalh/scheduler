@@ -1,8 +1,7 @@
 * Go Task Scheduler
-[[https://img.shields.io/travis/rakanalh/go-scheduler/master.svg?style=flat-square][https://travis-ci.org/rakanalh/go-scheduler]]
-[[https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square][https://github.com/rakanalh/go-scheduler/blob/master/LICENSE.md]]
-[[https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square][https://godoc.org/github.com/rakanalh/go-scheduler]]
-[[http://codecov.io/github/rakanalh/go-scheduler/coverage.svg?branch=master][http://codecov.io/github/rakanalh/go-scheduler?branch=master]]
+[[https://travis-ci.org/rakanalh/scheduler][https://img.shields.io/travis/rakanalh/scheduler/master.svg?style=flat-square]] [[http://codecov.io/github/rakanalh/scheduler?branch=master][http://codecov.io/github/rakanalh/scheduler/coverage.svg?branch=master]] [[https://godoc.org/github.com/rakanalh/scheduler][https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square]] [[https://github.com/rakanalh/scheduler/blob/master/LICENSE.txt][https://img.shields.io/badge/License-MIT-orange.svg?style=flat-square]]
+
+
 
 Go Task scheduler is a small library that you can use within your application that enables you to execute callbacks (goroutines) after a pre-defined
 amount of time. GTS also provides task storage which is used to invoke callbacks for tasks which couldn't be executed
@@ -16,7 +15,7 @@ during down-time as well as maintaining a history of the callbacks that got exec
 
 * Installation
 #+BEGIN_SRC shell
-go get github.com/rakanalh/go-scheduler
+go get github.com/rakanalh/scheduler
 #+END_SRC
 
 * How To Use
@@ -81,7 +80,7 @@ taskID := s.RunEvery(1 * time.Minute, MyFunc, "Hello", "World")
 
 * Examples
 
-The [[https://github.com/rakanalh/go-scheduler/tree/master/_example/][Examples]] folder contains a bunch of code samples you can look into.
+The [[https://github.com/rakanalh/scheduler/tree/master/_example/][Examples]] folder contains a bunch of code samples you can look into.
 
 * Custom Storage
 
@@ -89,11 +88,27 @@ GTS supports the ability to provide a custom storage, the newly created storage 
 
 #+BEGIN_SRC go
 type TaskStore interface {
-	Store(task *task.Task) error
-        Remove(task *task.Task) error
-	Fetch() ([]*task.Task, error)
+	Store(task *TaskAttributes) error
+        Remove(task *TaskAttributes) error
+	Fetch() ([]TaskAttributes, error)
 }
 #+END_SRC
+
+TaskAttributes looks as follows:
+#+BEGIN_SRC go
+type TaskAttributes struct {
+	Hash        string
+	Name        string
+	LastRun     string
+	NextRun     string
+	Duration    string
+	IsRecurring string
+	Params      string
+}
+#+END_SRC
+
+* TODOs
+- [ ] Design a cron-like task schedule for RunEvery method
 
 * Credit
 This package is heavily inspired by [[https://github.com/agronholm/apscheduler/][APScheduler]] for Python & [[https://github.com/jasonlvhit/gocron][GoCron]]

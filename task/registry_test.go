@@ -83,7 +83,7 @@ func TestFunctionMetaParams(t *testing.T) {
 
 	expectedParams := []reflect.Type{
 		reflect.TypeOf(""),
-		reflect.TypeOf(""),
+		reflect.TypeOf(true),
 	}
 	for idx, param := range params {
 		if expectedParams[idx].Name() != param.Name() {
