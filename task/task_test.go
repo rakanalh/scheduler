@@ -5,23 +5,14 @@ import (
 	"time"
 )
 
-func TestNewTask(t *testing.T) {
-	mock := CallbackMock{}
-	_, err := New(mock.CallNoArgs)
-	if err != nil {
-		t.Error("New returned an error when it should succeed", err)
-	}
-
-	fakeCallback := "String"
-	_, err = New(fakeCallback)
-	if err == nil {
-		t.Error("New did not fail when passing a non-function value")
-	}
-}
-
 func TestTaskIsDue(t *testing.T) {
 	mock := CallbackMock{}
-	task, _ := New(mock.CallNoArgs)
+	task := newTestTaskWithSchedule(t, mock.CallNoArgs, []Param{}, Schedule{
+		IsRecurring: false,
+		LastRun:     time.Now(),
+		NextRun:     time.Now(),
+		Duration:    0,
+	})
 	task.NextRun = time.Now()
 	if !task.IsDue() {
 		t.Error("Task should be due")
@@ -41,7 +32,7 @@ func TestTaskRun(t *testing.T) {
 	mock := CallbackMock{}
 	mock.On("CallNoArgs").Return()
 
-	task, _ := New(mock.CallNoArgs)
+	task := newTestTask(t, mock.CallNoArgs, []Param{})
 	task.Run()
 
 	mock.AssertExpectations(t)
@@ -51,7 +42,7 @@ func TestTaskRunWithArgs(t *testing.T) {
 	mock := CallbackMock{}
 	mock.On("CallWithArgs", "Test", true).Return()
 
-	task, _ := New(mock.CallWithArgs, "Test", true)
+	task := newTestTask(t, mock.CallWithArgs, []Param{"Test", true})
 	task.Run()
 
 	mock.AssertExpectations(t)
@@ -62,7 +53,7 @@ func TestTaskRunScheduledNextRun(t *testing.T) {
 	mock.On("CallNoArgs").Return()
 
 	timeNow := time.Now()
-	task, _ := New(mock.CallNoArgs)
+	task := newTestTask(t, mock.CallNoArgs, []Param{})
 	task.IsRecurring = true
 	task.NextRun = timeNow
 	task.Duration = 5 * time.Second
@@ -77,7 +68,7 @@ func TestTaskRunScheduledNextRun(t *testing.T) {
 
 func TestGenerateHash(t *testing.T) {
 	mock := CallbackMock{}
-	task, _ := New(mock.CallNoArgs)
+	task := newTestTask(t, mock.CallNoArgs, []Param{})
 	task.IsRecurring = true
 	task.NextRun = time.Now()
 	task.Duration = 5 * time.Second
@@ -86,4 +77,20 @@ func TestGenerateHash(t *testing.T) {
 	if hash == "" {
 		t.Fail()
 	}
+}
+
+func newTestTask(t *testing.T, function Function, params []Param) *Task {
+	funcMeta, err := newFuncMeta(function)
+	if err != nil {
+		t.Error("Failed to register function")
+	}
+	return New(funcMeta, params)
+}
+
+func newTestTaskWithSchedule(t *testing.T, function Function, params []Param, schedule Schedule) *Task {
+	funcMeta, err := newFuncMeta(function)
+	if err != nil {
+		t.Error("Failed to register function")
+	}
+	return NewWithSchedule(funcMeta, params, schedule)
 }

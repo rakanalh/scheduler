@@ -1,6 +1,14 @@
 package storage
 
-type TaskAttributes map[string]string
+type TaskAttributes struct {
+	Hash        string
+	Name        string
+	LastRun     string
+	NextRun     string
+	Duration    string
+	IsRecurring string
+	Params      string
+}
 
 type TaskStore interface {
 	Add(TaskAttributes) error

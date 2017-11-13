@@ -2,7 +2,6 @@ package scheduler
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"strconv"
 	"strings"
@@ -26,38 +25,38 @@ func (sb *storeBridge) Add(task *task.Task) error {
 }
 
 func (sb *storeBridge) Fetch() ([]*task.Task, error) {
-	tasks_maps, err := sb.store.Fetch()
+	storedTasks, err := sb.store.Fetch()
 	if err != nil {
 		return []*task.Task{}, err
 	}
 	var tasks []*task.Task
-	for _, task_map := range tasks_maps {
-		lastRun, err := time.Parse(time.RFC3339, task_map["last_run"])
+	for _, storedTask := range storedTasks {
+		lastRun, err := time.Parse(time.RFC3339, storedTask.LastRun)
 		if err != nil {
 			return nil, err
 		}
 
-		nextRun, err := time.Parse(time.RFC3339, task_map["next_run"])
+		nextRun, err := time.Parse(time.RFC3339, storedTask.NextRun)
 		if err != nil {
 			return nil, err
 		}
 
-		duration, err := time.ParseDuration(task_map["duration"])
+		duration, err := time.ParseDuration(storedTask.Duration)
 		if err != nil {
 			return nil, err
 		}
 
-		isRecurring, err := strconv.Atoi(task_map["is_recurring"])
+		isRecurring, err := strconv.Atoi(storedTask.IsRecurring)
 		if err != nil {
 			return nil, err
 		}
 
-		funcMeta, err := sb.funcRegistry.Get(task_map["name"])
+		funcMeta, err := sb.funcRegistry.Get(storedTask.Name)
 		if err != nil {
 			return nil, err
 		}
 
-		params, err := paramsFromString(funcMeta, task_map["params"])
+		params, err := paramsFromString(funcMeta, storedTask.Params)
 		if err != nil {
 			return nil, err
 		}
@@ -84,7 +83,7 @@ func (sb *storeBridge) Remove(task *task.Task) error {
 func (sb *storeBridge) getTaskAttributes(task *task.Task) (storage.TaskAttributes, error) {
 	params, err := paramsToString(task.Params)
 	if err != nil {
-		return nil, err
+		return storage.TaskAttributes{}, err
 	}
 
 	isRecurring := 0
@@ -93,13 +92,13 @@ func (sb *storeBridge) getTaskAttributes(task *task.Task) (storage.TaskAttribute
 	}
 
 	return storage.TaskAttributes{
-		"hash":         string(task.Hash()),
-		"name":         task.Func.Name,
-		"last_run":     task.LastRun.Format(time.RFC3339),
-		"next_run":     task.NextRun.Format(time.RFC3339),
-		"duration":     task.Duration.String(),
-		"is_recurring": strconv.Itoa(isRecurring),
-		"params":       params,
+		Hash:        string(task.Hash()),
+		Name:        task.Func.Name,
+		LastRun:     task.LastRun.Format(time.RFC3339),
+		NextRun:     task.NextRun.Format(time.RFC3339),
+		Duration:    task.Duration.String(),
+		IsRecurring: strconv.Itoa(isRecurring),
+		Params:      params,
 	}, nil
 }
 
@@ -132,7 +131,6 @@ func paramsFromString(funcMeta task.FunctionMeta, payload string) ([]task.Param,
 		target := reflect.New(paramType)
 		err := json.Unmarshal([]byte(paramStr), target.Interface())
 		if err != nil {
-			fmt.Println(paramStr)
 			return params, err
 		}
 		param := reflect.Indirect(target).Interface().(task.Param)

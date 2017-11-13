@@ -65,14 +65,6 @@ func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Funct
 	return task.Hash(), nil
 }
 
-func (scheduler *Scheduler) Remove(taskID task.TaskID) error {
-	return nil
-}
-
-func (scheduler *Scheduler) Clear() {
-
-}
-
 func (scheduler *Scheduler) Start() error {
 	log.Println("Scheduler is starting...")
 	sigChan := make(chan os.Signal, 1)
@@ -123,20 +115,17 @@ func (scheduler *Scheduler) populateTasks() error {
 		exists := scheduler.funcRegistry.Exists(dbTask.Func.Name)
 		if !exists {
 			log.Printf("%s was not found, it will be removed\n", dbTask.Func.Name)
-			scheduler.taskStore.Remove(dbTask)
+			_ = scheduler.taskStore.Remove(dbTask)
 			continue
 		}
 
 		// If the task instance is still registered with the same computed hash then move on.
 		// Otherwise, one of the attributes changed and therefore, the task instance should
-		// be removed as changing task attributes and compiling a new version means that we'd
-		// like the new task to start running instead of the old one.
+		// be added to the list of tasks to be executed with the stored params
 		registeredTask, ok := scheduler.tasks[dbTask.Hash()]
 		if !ok {
-			log.Printf("Detected a change in attributes of one of the instances of task %s, removing old instance\n",
+			log.Printf("Detected a change in attributes of one of the instances of task %s, \n",
 				dbTask.Func.Name)
-			//scheduler.taskStore.Remove(dbTask)
-			//continue
 			dbTask.Func, _ = scheduler.funcRegistry.Get(dbTask.Func.Name)
 			registeredTask = dbTask
 			scheduler.tasks[dbTask.Hash()] = registeredTask
@@ -146,7 +135,7 @@ func (scheduler *Scheduler) populateTasks() error {
 		if !dbTask.IsRecurring && dbTask.NextRun.Before(time.Now()) {
 			// We might have a task instance which was executed already.
 			// In this case, delete it.
-			scheduler.taskStore.Remove(dbTask)
+			_ = scheduler.taskStore.Remove(dbTask)
 			delete(scheduler.tasks, dbTask.Hash())
 			continue
 		}
@@ -176,7 +165,7 @@ func (scheduler *Scheduler) runPending() {
 			go task.Run()
 
 			if !task.IsRecurring {
-				scheduler.taskStore.Remove(task)
+				_ = scheduler.taskStore.Remove(task)
 				delete(scheduler.tasks, task.Hash())
 			}
 		}

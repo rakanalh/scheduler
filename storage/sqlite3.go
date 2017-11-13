@@ -59,7 +59,7 @@ func (sqlite *Sqlite3Storage) Initialize() error {
 
 func (sqlite Sqlite3Storage) Add(task TaskAttributes) error {
 	var count int
-	rows, err := sqlite.db.Query("SELECT count(*) FROM task_store WHERE hash=?", task["hash"])
+	rows, err := sqlite.db.Query("SELECT count(*) FROM task_store WHERE hash=?", task.Hash)
 	if err == nil {
 		rows.Next()
 		_ = rows.Scan(&count)
@@ -82,7 +82,7 @@ func (sqlite Sqlite3Storage) Remove(task TaskAttributes) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(
-		task["hash"],
+		task.Hash,
 	)
 	if err != nil {
 		return fmt.Errorf("Error while deleting task: %s", err)
@@ -112,12 +112,12 @@ func (sqlite Sqlite3Storage) Fetch() ([]TaskAttributes, error) {
 		}
 
 		task := TaskAttributes{
-			"name":         name,
-			"params":       params,
-			"last_run":     lastRun,
-			"next_run":     nextRun,
-			"duration":     string(duration),
-			"is_recurring": string(isRecurring),
+			Name:        name,
+			Params:      params,
+			LastRun:     lastRun,
+			NextRun:     nextRun,
+			Duration:    string(duration),
+			IsRecurring: string(isRecurring),
 		}
 
 		tasks = append(tasks, task)
@@ -141,13 +141,13 @@ func (sqlite *Sqlite3Storage) insert(task TaskAttributes) error {
 	defer stmt.Close()
 
 	_, err = stmt.Exec(
-		task["name"],
-		task["params"],
-		task["duration"],
-		task["last_run"],
-		task["next_run"],
-		task["is_recurring"],
-		task["hash"],
+		task.Name,
+		task.Params,
+		task.Duration,
+		task.LastRun,
+		task.NextRun,
+		task.IsRecurring,
+		task.Hash,
 	)
 	if err != nil {
 		return fmt.Errorf("Error while inserting task: %s", err)

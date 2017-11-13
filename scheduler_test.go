@@ -14,7 +14,7 @@ func TestRunAt(t *testing.T) {
 	mock := task.CallbackMock{}
 
 	timeNow := time.Now()
-	scheduler := New(storage.NoOpStorage{})
+	scheduler := New(storage.NewMemoryStorage())
 	taskID, err := scheduler.RunAt(timeNow, mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
@@ -36,7 +36,7 @@ func TestRunAt(t *testing.T) {
 
 func TestRunAfter(t *testing.T) {
 	mock := task.CallbackMock{}
-	scheduler := New(storage.NoOpStorage{})
+	scheduler := New(storage.NewMemoryStorage())
 	_, err := scheduler.RunAfter(5, mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
@@ -49,7 +49,7 @@ func TestRunAfter(t *testing.T) {
 
 func TestRunEvery(t *testing.T) {
 	mock := task.CallbackMock{}
-	scheduler := New(storage.NoOpStorage{})
+	scheduler := New(storage.NewMemoryStorage())
 	taskID, err := scheduler.RunEvery(5, mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
@@ -67,7 +67,7 @@ func TestRunEvery(t *testing.T) {
 
 func TestRunPending(t *testing.T) {
 	mock := task.CallbackMock{}
-	scheduler := New(storage.NoOpStorage{})
+	scheduler := New(storage.NewMemoryStorage())
 	_, err := scheduler.RunAt(time.Now(), mock.CallNoArgs)
 	if err != nil {
 		t.Error("Creating a task should succeed")
@@ -102,7 +102,7 @@ func TestStart(t *testing.T) {
 	mock := task.CallbackMock{}
 	mock.On("CallNoArgs").Return()
 
-	scheduler := New(storage.NoOpStorage{})
+	scheduler := New(storage.NewMemoryStorage())
 	_, err := scheduler.RunAt(time.Now(), mock.CallNoArgs)
 	if err != nil {
 		t.Error("Should not fail")
@@ -117,4 +117,27 @@ func TestStart(t *testing.T) {
 
 	// Task should be executed and then rescheduled
 	mock.AssertExpectations(t)
+}
+
+func TestPopulateTasks(t *testing.T) {
+	mock := task.CallbackMock{}
+
+	taskAttributes := storage.TaskAttributes{
+		Hash:        "TestHash",
+		LastRun:     "2017-11-10T12:00:00Z",
+		NextRun:     "2017-11-10T12:00:00Z",
+		Duration:    "5s",
+		IsRecurring: "0",
+		Name:        "github.com/rakanalh/scheduler/task.(*CallbackMock).CallNoArgs-fm",
+		Params:      "",
+	}
+
+	memStore := storage.NewMemoryStorage()
+	memStore.Add(taskAttributes)
+	scheduler := New(memStore)
+	scheduler.RunAfter(5, mock.CallNoArgs)
+	err := scheduler.populateTasks()
+	if err != nil {
+		t.Error("Failed to populate tasks: ", err)
+	}
 }
