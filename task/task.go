@@ -44,14 +44,13 @@ func (task *Task) IsDue() bool {
 }
 
 func (task *Task) Run() {
+	task.scheduleNextRun()
 	function := reflect.ValueOf(task.Func.function)
 	params := make([]reflect.Value, len(task.Params))
 	for i, param := range task.Params {
 		params[i] = reflect.ValueOf(param)
 	}
 	function.Call(params)
-
-	task.scheduleNextRun()
 }
 
 func (task *Task) Hash() TaskID {
