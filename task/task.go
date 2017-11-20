@@ -8,8 +8,10 @@ import (
 	"time"
 )
 
-type TaskID string
+// ID is returned upon scheduling a task to be executed
+type ID string
 
+// Schedule holds information about the execution times of a specific task
 type Schedule struct {
 	IsRecurring bool
 	LastRun     time.Time
@@ -17,12 +19,14 @@ type Schedule struct {
 	Duration    time.Duration
 }
 
+// Task holds information about task
 type Task struct {
 	Schedule
 	Func   FunctionMeta
 	Params []Param
 }
 
+// New returns an instance of task
 func New(function FunctionMeta, params []Param) *Task {
 	return &Task{
 		Func:   function,
@@ -30,6 +34,7 @@ func New(function FunctionMeta, params []Param) *Task {
 	}
 }
 
+// NewWithSchedule creates an instance of task with the provided schedule information
 func NewWithSchedule(function FunctionMeta, params []Param, schedule Schedule) *Task {
 	return &Task{
 		Func:     function,
@@ -38,11 +43,13 @@ func NewWithSchedule(function FunctionMeta, params []Param, schedule Schedule) *
 	}
 }
 
+// IsDue returns a boolean indicating whether the task should execute or not
 func (task *Task) IsDue() bool {
 	timeNow := time.Now()
 	return timeNow == task.NextRun || timeNow.After(task.NextRun)
 }
 
+// Run will execute the task and schedule it's next run.
 func (task *Task) Run() {
 	// Reschedule task first to prevent running the task
 	// again in case the execution time takes more than the
@@ -57,13 +64,14 @@ func (task *Task) Run() {
 	function.Call(params)
 }
 
-func (task *Task) Hash() TaskID {
+// Hash will return the SHA1 representation of the task's data.
+func (task *Task) Hash() ID {
 	hash := sha1.New()
-	io.WriteString(hash, task.Func.Name)
-	io.WriteString(hash, fmt.Sprintf("%+v", task.Params))
-	io.WriteString(hash, fmt.Sprintf("%s", task.Schedule.Duration))
-	io.WriteString(hash, fmt.Sprintf("%t", task.Schedule.IsRecurring))
-	return TaskID(fmt.Sprintf("%x", hash.Sum(nil)))
+	_, _ = io.WriteString(hash, task.Func.Name)
+	_, _ = io.WriteString(hash, fmt.Sprintf("%+v", task.Params))
+	_, _ = io.WriteString(hash, fmt.Sprintf("%s", task.Schedule.Duration))
+	_, _ = io.WriteString(hash, fmt.Sprintf("%t", task.Schedule.IsRecurring))
+	return ID(fmt.Sprintf("%x", hash.Sum(nil)))
 }
 
 func (task *Task) scheduleNextRun() {

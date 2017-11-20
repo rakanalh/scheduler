@@ -11,19 +11,22 @@ import (
 	"github.com/rakanalh/scheduler/task"
 )
 
+// Scheduler is used to schedule tasks. It holds information about those tasks
+// including metadata such as argument types and schedule times
 type Scheduler struct {
 	funcRegistry *task.FuncRegistry
 	stopChan     chan bool
-	tasks        map[task.TaskID]*task.Task
+	tasks        map[task.ID]*task.Task
 	taskStore    storeBridge
 }
 
+// New will return a new instance of the `Scheduler` struct.
 func New(store storage.TaskStore) Scheduler {
 	funcRegistry := task.NewFuncRegistry()
 	return Scheduler{
 		funcRegistry: funcRegistry,
 		stopChan:     make(chan bool),
-		tasks:        make(map[task.TaskID]*task.Task),
+		tasks:        make(map[task.ID]*task.Task),
 		taskStore: storeBridge{
 			store:        store,
 			funcRegistry: funcRegistry,
@@ -31,7 +34,8 @@ func New(store storage.TaskStore) Scheduler {
 	}
 }
 
-func (scheduler *Scheduler) RunAt(time time.Time, function task.Function, params ...task.Param) (task.TaskID, error) {
+// RunAt will schedule `function` to be executed once at the given time.
+func (scheduler *Scheduler) RunAt(time time.Time, function task.Function, params ...task.Param) (task.ID, error) {
 	funcMeta, err := scheduler.funcRegistry.Add(function)
 	if err != nil {
 		return "", err
@@ -45,11 +49,13 @@ func (scheduler *Scheduler) RunAt(time time.Time, function task.Function, params
 	return task.Hash(), nil
 }
 
-func (scheduler *Scheduler) RunAfter(duration time.Duration, function task.Function, params ...task.Param) (task.TaskID, error) {
+// RunAfter executes `function` once after a specific duration has elapsed.
+func (scheduler *Scheduler) RunAfter(duration time.Duration, function task.Function, params ...task.Param) (task.ID, error) {
 	return scheduler.RunAt(time.Now().Add(duration), function, params...)
 }
 
-func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Function, params ...task.Param) (task.TaskID, error) {
+// RunEvery will schedule `function` to be executed every time the duration has elapsed.
+func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Function, params ...task.Param) (task.ID, error) {
 	funcMeta, err := scheduler.funcRegistry.Add(function)
 	if err != nil {
 		return "", err
@@ -65,6 +71,8 @@ func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Funct
 	return task.Hash(), nil
 }
 
+// Start will run the scheduler's timer and will trigger the execution
+// of tasks depending on their schedule.
 func (scheduler *Scheduler) Start() error {
 	log.Println("Scheduler is starting...")
 	sigChan := make(chan os.Signal, 1)
@@ -96,10 +104,12 @@ func (scheduler *Scheduler) Start() error {
 	return nil
 }
 
+// Stop will put the scheduler to halt
 func (scheduler *Scheduler) Stop() {
 	scheduler.stopChan <- true
 }
 
+// Wait is a convenience function for blocking until the scheduler is stopped.
 func (scheduler *Scheduler) Wait() {
 	<-scheduler.stopChan
 }
