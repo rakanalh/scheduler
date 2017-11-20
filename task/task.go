@@ -44,7 +44,11 @@ func (task *Task) IsDue() bool {
 }
 
 func (task *Task) Run() {
+	// Reschedule task first to prevent running the task
+	// again in case the execution time takes more than the
+	// task's duration value.
 	task.scheduleNextRun()
+
 	function := reflect.ValueOf(task.Func.function)
 	params := make([]reflect.Value, len(task.Params))
 	for i, param := range task.Params {
