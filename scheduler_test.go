@@ -119,6 +119,36 @@ func TestStart(t *testing.T) {
 	mock.AssertExpectations(t)
 }
 
+func TestCancelTask(t *testing.T) {
+	scheduler := New(storage.NewNoOpStorage())
+	mock := task.CallbackMock{}
+
+	err := scheduler.Cancel(task.ID("123456"))
+	if err == nil {
+		t.Error("Should fail because task does not exist")
+	}
+
+	taskID, _ := scheduler.RunAfter(5*time.Second, mock.CallNoArgs)
+	err = scheduler.Cancel(taskID)
+	if err != nil {
+		t.Error("Clearing an existent task should not fail")
+	}
+}
+
+func TestClearTask(t *testing.T) {
+	scheduler := New(storage.NewNoOpStorage())
+	mock := task.CallbackMock{}
+
+	scheduler.RunAfter(5*time.Second, mock.CallNoArgs)
+	scheduler.RunAfter(5*time.Second, mock.CallWithArgs)
+
+	scheduler.Clear()
+
+	if len(scheduler.tasks) > 0 {
+		t.Error("Clearing tasks didn't take effect.")
+	}
+}
+
 func TestPopulateTasks(t *testing.T) {
 	mock := task.CallbackMock{}
 

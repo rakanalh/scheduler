@@ -2,6 +2,7 @@
 package scheduler
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -21,7 +22,7 @@ type Scheduler struct {
 	taskStore    storeBridge
 }
 
-// New will return a new instance of the `Scheduler` struct.
+// New will return a new instance of the Scheduler struct.
 func New(store storage.TaskStore) Scheduler {
 	funcRegistry := task.NewFuncRegistry()
 	return Scheduler{
@@ -35,7 +36,7 @@ func New(store storage.TaskStore) Scheduler {
 	}
 }
 
-// RunAt will schedule `function` to be executed once at the given time.
+// RunAt will schedule function to be executed once at the given time.
 func (scheduler *Scheduler) RunAt(time time.Time, function task.Function, params ...task.Param) (task.ID, error) {
 	funcMeta, err := scheduler.funcRegistry.Add(function)
 	if err != nil {
@@ -50,12 +51,12 @@ func (scheduler *Scheduler) RunAt(time time.Time, function task.Function, params
 	return task.Hash(), nil
 }
 
-// RunAfter executes `function` once after a specific duration has elapsed.
+// RunAfter executes function once after a specific duration has elapsed.
 func (scheduler *Scheduler) RunAfter(duration time.Duration, function task.Function, params ...task.Param) (task.ID, error) {
 	return scheduler.RunAt(time.Now().Add(duration), function, params...)
 }
 
-// RunEvery will schedule `function` to be executed every time the duration has elapsed.
+// RunEvery will schedule function to be executed every time the duration has elapsed.
 func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Function, params ...task.Param) (task.ID, error) {
 	funcMeta, err := scheduler.funcRegistry.Add(function)
 	if err != nil {
@@ -113,6 +114,28 @@ func (scheduler *Scheduler) Stop() {
 // Wait is a convenience function for blocking until the scheduler is stopped.
 func (scheduler *Scheduler) Wait() {
 	<-scheduler.stopChan
+}
+
+// Cancel is used to cancel the planned execution of a specific task using it's ID.
+// The ID is returned when the task was scheduled using RunAt, RunAfter or RunEvery
+func (scheduler *Scheduler) Cancel(taskID task.ID) error {
+	task, found := scheduler.tasks[taskID]
+	if !found {
+		return fmt.Errorf("Task not found")
+	}
+
+	_ = scheduler.taskStore.Remove(task)
+	delete(scheduler.tasks, taskID)
+	return nil
+}
+
+// Clear will cancel the execution and clear all registered tasks.
+func (scheduler *Scheduler) Clear() {
+	for taskID, currentTask := range scheduler.tasks {
+		_ = scheduler.taskStore.Remove(currentTask)
+		delete(scheduler.tasks, taskID)
+	}
+	scheduler.funcRegistry = task.NewFuncRegistry()
 }
 
 func (scheduler *Scheduler) populateTasks() error {
