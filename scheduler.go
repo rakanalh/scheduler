@@ -82,10 +82,10 @@ func (scheduler *Scheduler) Start() error {
 
 	// Populate tasks from storage
 	if err := scheduler.populateTasks(); err != nil {
-		return nil
+		return err
 	}
 	if err := scheduler.persistRegisteredTasks(); err != nil {
-		return nil
+		return err
 	}
 	scheduler.runPending()
 
