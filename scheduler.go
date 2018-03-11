@@ -76,7 +76,6 @@ func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Funct
 // Start will run the scheduler's timer and will trigger the execution
 // of tasks depending on their schedule.
 func (scheduler *Scheduler) Start() error {
-	log.Println("Scheduler is starting...")
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
