@@ -20,7 +20,6 @@ type Scheduler struct {
 	stopChan     chan bool
 	tasks        map[task.ID]*task.Task
 	taskStore    storeBridge
-	silent       bool
 }
 
 // New will return a new instance of the Scheduler struct.
@@ -74,16 +73,9 @@ func (scheduler *Scheduler) RunEvery(duration time.Duration, function task.Funct
 	return task.Hash(), nil
 }
 
-func (scheduler *Scheduler) Silent() {
-	scheduler.silent = true
-}
-
 // Start will run the scheduler's timer and will trigger the execution
 // of tasks depending on their schedule.
 func (scheduler *Scheduler) Start() error {
-	if !scheduler.silent {
-		log.Println("Scheduler is starting...")
-	}
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
