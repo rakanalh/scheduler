@@ -34,6 +34,6 @@ func (memStore *MemoryStorage) Remove(task TaskAttributes) error {
 	return nil
 }
 
-func (memStore *MemoryStorage) Close() error {
+func (memStore *MemoryStorage) Close()error{
 	return nil
 }

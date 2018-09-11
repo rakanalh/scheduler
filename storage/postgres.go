@@ -8,32 +8,32 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type PostgresDBConfig struct {
+type PostgresConfig struct {
 	DbURL string
 }
 
 type postgresStorage struct {
-	config PostgresDBConfig
+	config PostgresConfig
 	db     *sql.DB
 }
 
 // creates new instance of postgres DB
-func NewPostgresStorage(config PostgresDBConfig) (postgres *postgresStorage, err error) {
+func NewPostgresStorage(config PostgresConfig) (postgres *postgresStorage,err error){
 	// TODO should connect and initialize as well.
 	postgres = &postgresStorage{config: config}
 	// tyr to connect to givenDB.
 	err = postgres.connect()
-	if err != nil {
-		log.Printf("Unable to connect to DB : %s, error : %v", config.DbURL, err)
-		return nil, err
+	if err != nil{
+		log.Printf("Unable to connect to DB : %s, error : %v",config.DbURL,err)
+		return nil,err
 	}
 	// lets initialize the DB as needed.
 	err = postgres.initialize()
-	if err != nil {
-		log.Printf("Couldn't initialize the DB, error : %v", err)
+	if err != nil{
+		log.Printf("Couldn't initialize the DB, error : %v",err)
 		return nil, err
 	}
-	return postgres, nil
+	return postgres,nil
 }
 
 // Connect creates a database connection to the given config URL, and assigns to the Storage fields `db`.

@@ -24,6 +24,6 @@ func (noop NoOpStorage) Remove(task TaskAttributes) error {
 	return nil
 }
 
-func (noop NoOpStorage) Close() error {
+func (noop NoOpStorage) Close()error{
 	return nil
 }
