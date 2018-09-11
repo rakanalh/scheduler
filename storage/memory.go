@@ -33,3 +33,7 @@ func (memStore *MemoryStorage) Remove(task TaskAttributes) error {
 	memStore.tasks = newTasks
 	return nil
 }
+
+func (memStore *MemoryStorage) Close()error{
+	return nil
+}

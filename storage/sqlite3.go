@@ -40,7 +40,7 @@ func (sqlite *Sqlite3Storage) Connect() error {
 }
 
 // Close will close the open DB file.
-func (sqlite *Sqlite3Storage) Close() error {
+func (sqlite Sqlite3Storage) Close() error {
 	return sqlite.db.Close()
 }
 
