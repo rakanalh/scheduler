@@ -23,3 +23,7 @@ func (noop NoOpStorage) Fetch() ([]TaskAttributes, error) {
 func (noop NoOpStorage) Remove(task TaskAttributes) error {
 	return nil
 }
+
+func (noop NoOpStorage) Close()error{
+	return nil
+}
