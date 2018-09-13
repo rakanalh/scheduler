@@ -95,6 +95,10 @@ func (s *storeMock) Close() error{
 	return nil
 }
 
+func (s *storeMock) Close() error{
+	return nil
+}
+
 func mockFunction(a string, b int) {
 
 }
