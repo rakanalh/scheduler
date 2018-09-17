@@ -3,7 +3,7 @@ package scheduler
 import (
 	"fmt"
 
-	"github.com/rakanalh/scheduler/storage"
+	"github.com/dmitescu/scheduler/storage"
 )
 
 type failureMode int

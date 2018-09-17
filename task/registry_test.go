@@ -33,7 +33,7 @@ func TestGet(t *testing.T) {
 		t.Error("Failed to register function")
 	}
 
-	getResult, err := funcRegistry.Get("github.com/rakanalh/scheduler/task.(*CallbackMock).CallNoArgs-fm")
+	getResult, err := funcRegistry.Get("github.com/dmitescu/scheduler/task.(*CallbackMock).CallNoArgs-fm")
 
 	if err != nil || funcMeta.Name != getResult.Name {
 		t.Error("Could not find registered function")
@@ -70,7 +70,7 @@ func TestExists(t *testing.T) {
 	if found {
 		t.Error("Found a non-registered function")
 	}
-	found = funcRegistry.Exists("github.com/rakanalh/scheduler/task.(*CallbackMock).CallNoArgs-fm")
+	found = funcRegistry.Exists("github.com/dmitescu/scheduler/task.(*CallbackMock).CallNoArgs-fm")
 	if !found {
 		t.Error("Couldn't find a registered function")
 	}

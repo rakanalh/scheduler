@@ -4,11 +4,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/rakanalh/scheduler/storage"
-	"github.com/rakanalh/scheduler/task"
+	"github.com/dmitescu/scheduler/storage"
+	"github.com/dmitescu/scheduler/task"
 )
 
-const TestTaskName = "github.com/rakanalh/scheduler/task.(*CallbackMock).CallNoArgs-fm"
+const TestTaskName = "github.com/dmitescu/scheduler/task.(*CallbackMock).CallNoArgs-fm"
 
 func TestRunAt(t *testing.T) {
 	mock := task.CallbackMock{}
@@ -158,7 +158,7 @@ func TestPopulateTasks(t *testing.T) {
 		NextRun:     "2017-11-10T12:00:00Z",
 		Duration:    "5s",
 		IsRecurring: "0",
-		Name:        "github.com/rakanalh/scheduler/task.(*CallbackMock).CallNoArgs-fm",
+		Name:        "github.com/dmitescu/scheduler/task.(*CallbackMock).CallNoArgs-fm",
 		Params:      "",
 	}
 
