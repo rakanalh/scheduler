@@ -90,15 +90,9 @@ func (s *storeMock) Fetch() ([]storage.TaskAttributes, error) {
 func (s *storeMock) Remove(task storage.TaskAttributes) error {
 	return nil
 }
-
-func (s *storeMock) Close() error{
-	return nil
-}
-
 func (s *storeMock) Close() error {
 	return nil
 }
-
 func mockFunction(a string, b int) {
 
 }

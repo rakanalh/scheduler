@@ -8,17 +8,17 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type PostgresConfig struct {
+type PostgresDBConfig struct {
 	DbURL string
 }
 
 type postgresStorage struct {
-	config PostgresConfig
+	config PostgresDBConfig
 	db     *sql.DB
 }
 
 // creates new instance of postgres DB
-func NewPostgresStorage(config PostgresConfig) (postgres *postgresStorage, err error) {
+func NewPostgresStorage(config PostgresDBConfig) (postgres *postgresStorage, err error) {
 	// TODO should connect and initialize as well.
 	postgres = &postgresStorage{config: config}
 	// tyr to connect to givenDB.

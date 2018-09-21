@@ -1,11 +1,12 @@
 package main
 
 import (
-"github.com/rakanalh/scheduler"
-"github.com/rakanalh/scheduler/storage"
-"io"
-"log"
-"time"
+	"io"
+	"log"
+	"time"
+
+	"github.com/rakanalh/scheduler"
+	"github.com/rakanalh/scheduler/storage"
 )
 
 func TaskWithoutArgs() {
@@ -17,22 +18,22 @@ func TaskWithArgs(message string) {
 }
 
 func main() {
-	storage,err := storage.NewPostgresStorage(
-		storage.PostgresConfig{
+	storage, err := storage.NewPostgresStorage(
+		storage.PostgresDBConfig{
 			DbURL: "postgresql://<db-username>:<db-password>@localhost:5432/scheduler?sslmode=disable",
 		},
 	)
-	if err != nil{
-		log.Fatalf("Couldn't create scheduler storage : %v",err)
+	if err != nil {
+		log.Fatalf("Couldn't create scheduler storage : %v", err)
 	}
 
 	s := scheduler.New(storage)
 
-	go func(s scheduler.Scheduler,store io.Closer){
-		time.Sleep(time.Second *10)
+	go func(s scheduler.Scheduler, store io.Closer) {
+		time.Sleep(time.Second * 10)
 		// store.Close()
 		s.Stop()
-	}(s,storage)
+	}(s, storage)
 	// Start a task without arguments
 	if _, err := s.RunAfter(60*time.Second, TaskWithoutArgs); err != nil {
 		log.Fatal(err)
