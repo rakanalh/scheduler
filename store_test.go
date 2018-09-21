@@ -155,6 +155,12 @@ func TestFetchWrongRunTimes(t *testing.T) {
 	if err == nil {
 		t.Error("Should fail when trying to parse empty string params")
 	}
+
+	// lets close the underlying DB store.
+	if err := store.store.Close(); err != nil {
+		t.Error("Shouldn't fail when we close the DB store")
+	}
+
 }
 
 func newTask(funcRegistry *task.FuncRegistry, function task.Function, params ...task.Param) *task.Task {
