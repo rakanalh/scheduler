@@ -17,13 +17,13 @@ func TaskWithArgs(message string) {
 }
 
 func main() {
-	storage,err := storage.NewPostgresStorage(
+	storage, err := storage.NewPostgresStorage(
 		storage.PostgresConfig{
 			DbURL: "postgresql://<db-username>:<db-password>@localhost:5432/scheduler?sslmode=disable",
 		},
 	)
-	if err != nil{
-		log.Fatalf("Couldn't create scheduler storage : %v",err)
+	if err != nil {
+		log.Fatalf("Couldn't create scheduler storage : %v", err)
 	}
 
 	s := scheduler.New(storage)
