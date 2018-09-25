@@ -18,7 +18,7 @@ func TaskWithArgs(message string) {
 
 func main() {
 	storage, err := storage.NewPostgresStorage(
-		storage.PostgresConfig{
+		storage.PostgresDBConfig{
 			DbURL: "postgresql://<db-username>:<db-password>@localhost:5432/scheduler?sslmode=disable",
 		},
 	)
