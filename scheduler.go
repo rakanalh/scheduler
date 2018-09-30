@@ -107,6 +107,7 @@ func (scheduler *Scheduler) Start() error {
 
 // Stop will put the scheduler to halt
 func (scheduler *Scheduler) Stop() {
+	scheduler.taskStore.store.Close()
 	scheduler.stopChan <- true
 }
 
