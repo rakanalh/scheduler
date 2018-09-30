@@ -8,7 +8,7 @@ import (
 )
 
 type TMongoStorage struct {
-	storage MongoDBStorage
+	storage *MongoDBStorage
 	init    sync.Once
 }
 

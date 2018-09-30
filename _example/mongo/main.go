@@ -17,12 +17,12 @@ func TaskWithArgs(message string) {
 }
 
 func main() {
-	storage := storage.MongoDBStorage(
+	storage := storage.NewMongoDBStorage(
 		storage.MongoDBConfig{
 			HostName: "127.0.0.1",
 			Port:     27017,
 			Db:       "dbname",
-		}
+		},
 	)
 	
 	if err := storage.Connect(); err != nil {

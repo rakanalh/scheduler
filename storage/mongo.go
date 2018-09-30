@@ -30,8 +30,8 @@ type MongoDBStorage struct {
 }
 
 // NewMongoDBStorage returns a new instance of MongoDBStorage.
-func NewMongoDBStorage(config MongoDBConfig) MongoDBStorage {
-	return MongoDBStorage{
+func NewMongoDBStorage(config MongoDBConfig) *MongoDBStorage {
+	return &MongoDBStorage{
 		config: config,
 	}
 }
