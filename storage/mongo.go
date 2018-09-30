@@ -85,6 +85,20 @@ func (mongodb *MongoDBStorage) Initialize() error {
 	return nil
 }
 
+// Cleans database
+func (mongodb *MongoDBStorage) clean() error {
+	task_store := mongodb.client.Database(mongodb.config.Db).Collection(COLLECTION_NAME)
+
+	if task_store == nil {
+		log.Printf("could not initialize collection")
+		return errors.New("mongo error")
+	}
+
+	_, err := task_store.DeleteMany(context.Background(),
+		bson.NewDocument())
+	return err
+}
+
 // Stores the task to mongo
 func (mongodb MongoDBStorage) Add(task TaskAttributes) error {
 	task_store := mongodb.client.Database(mongodb.config.Db).Collection(COLLECTION_NAME)
@@ -101,7 +115,7 @@ func (mongodb MongoDBStorage) Add(task TaskAttributes) error {
 	}
 
 	if res == 0 {
-		_, err := task_store.InsertOne(context.Background(),
+		res, err := task_store.InsertOne(context.Background(),
 			map[string]string{
 				"name":         task.Name,
 				"params":       task.Params,
@@ -111,6 +125,9 @@ func (mongodb MongoDBStorage) Add(task TaskAttributes) error {
 				"is_recurring": task.IsRecurring,
 				"hash":         task.Hash,
 			})
+		if res == nil {
+			return errors.New("element not inserted")
+		}
 		return err
 	}
 	return nil
@@ -126,8 +143,11 @@ func (mongodb MongoDBStorage) Remove(task TaskAttributes) error {
 
 	filter := bson.NewDocument(bson.EC.String("hash", task.Hash))
 
-	_, err := task_store.DeleteMany(context.Background(), filter)
+	res, err := task_store.DeleteMany(context.Background(), filter)
 
+	if res.DeletedCount == 0 {
+		return errors.New("no elements deleted")
+	}
 	return err
 }
 
