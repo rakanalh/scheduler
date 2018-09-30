@@ -1,9 +1,11 @@
 package storage
 
 import (
+	"context"
 	"sync"
 	"testing"
 
+	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/stretchr/testify/require"
 )
 
@@ -26,11 +28,11 @@ var mongoConfig MongoDBConfig = MongoDBConfig{
 var sampleTask = TaskAttributes{
 	Hash:        "A",
 	Name:        "B",
-	LastRun:     "",
-	NextRun:     "",
-	Duration:    "",
-	IsRecurring: "",
-	Params:      "",
+	LastRun:     "2018-09-30T20:00:00+02:00",
+	NextRun:     "2018-09-30T20:00:05+02:00",
+	Duration:    "5s",
+	IsRecurring: "0",
+	Params:      "null",
 }
 
 // Initializes database connection and collection cleanup
@@ -39,7 +41,10 @@ func (s *TMongoStorage) Init(config MongoDBConfig, t *testing.T) {
 		s.storage = NewMongoDBStorage(config)
 		err := s.storage.Connect()
 		require.NoError(t, err)
-		err = s.storage.clean()
+		_, err = s.storage.client.Database(config.Db).
+			Collection(COLLECTION_NAME).
+			DeleteMany(context.Background(),
+				bson.NewDocument())
 		require.NoError(t, err)
 		s.uninit = sync.Once{}
 	})
