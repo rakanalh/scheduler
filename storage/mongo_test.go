@@ -10,6 +10,7 @@ import (
 type TMongoStorage struct {
 	storage *MongoDBStorage
 	init    sync.Once
+	uninit  sync.Once
 }
 
 // default credentials for testing database
@@ -41,6 +42,14 @@ func (s *TMongoStorage) Init(config MongoDBConfig, t *testing.T) {
 		require.NoError(t, err)
 		err = s.storage.clean()
 		require.NoError(t, err)
+		s.uninit = sync.Once{}
+	})
+}
+
+func (s *TMongoStorage) Uninit(t *testing.T) {
+	s.uninit.Do(func() {
+		s.init = sync.Once{}
+		require.NoError(t, s.storage.Close())
 	})
 }
 
@@ -81,4 +90,10 @@ func TestRemove(t *testing.T) {
 	require.NoError(t, err)
 	err = mongoStorage.storage.Remove(fetchTask)
 	require.NoError(t, err)
+}
+
+// Test closing
+func TestClose(t *testing.T) {
+	mongoStorage.Init(mongoConfig, t)
+	mongoStorage.Uninit(t)
 }
