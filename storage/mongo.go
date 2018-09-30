@@ -143,11 +143,8 @@ func (mongodb MongoDBStorage) Remove(task TaskAttributes) error {
 
 	filter := bson.NewDocument(bson.EC.String("hash", task.Hash))
 
-	res, err := task_store.DeleteMany(context.Background(), filter)
+	_, err := task_store.DeleteOne(context.Background(), filter)
 
-	if res.DeletedCount == 0 {
-		return errors.New("no elements deleted")
-	}
 	return err
 }
 
