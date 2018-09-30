@@ -85,6 +85,20 @@ func (mongodb *MongoDBStorage) Initialize() error {
 	return nil
 }
 
+// Cleans database
+func (mongodb *MongoDBStorage) clean() error {
+	task_store := mongodb.client.Database(mongodb.config.Db).Collection(COLLECTION_NAME)
+
+	if task_store == nil {
+		log.Printf("could not initialize collection")
+		return errors.New("mongo error")
+	}
+
+	_, err := task_store.DeleteMany(context.Background(),
+		bson.NewDocument())
+	return err
+}
+
 // Stores the task to mongo
 func (mongodb MongoDBStorage) Add(task TaskAttributes) error {
 	task_store := mongodb.client.Database(mongodb.config.Db).Collection(COLLECTION_NAME)
