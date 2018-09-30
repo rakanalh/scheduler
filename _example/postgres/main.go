@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/rakanalh/scheduler"
-	"github.com/rakanalh/scheduler/storage"
 	"io"
 	"log"
 	"time"
+
+	"github.com/rakanalh/scheduler"
+	"github.com/rakanalh/scheduler/storage"
 )
 
 func TaskWithoutArgs() {
