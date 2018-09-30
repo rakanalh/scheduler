@@ -3,13 +3,13 @@ package storage
 import (
 	"sync"
 	"testing"
-	
+
 	"github.com/stretchr/testify/require"
 )
 
 type TMongoStorage struct {
 	storage MongoDBStorage
-	init  sync.Once
+	init    sync.Once
 }
 
 // default credentials for testing database
@@ -24,13 +24,13 @@ var mongoConfig MongoDBConfig = MongoDBConfig{
 }
 
 var sampleTask = TaskAttributes{
-	Hash        : "A",
-	Name        : "B",
-	LastRun     : "",
-	NextRun     : "",
-	Duration    : "",
-	IsRecurring : "",
-	Params      : "",
+	Hash:        "A",
+	Name:        "B",
+	LastRun:     "",
+	NextRun:     "",
+	Duration:    "",
+	IsRecurring: "",
+	Params:      "",
 }
 
 // Initializes database connection and collection cleanup
