@@ -16,11 +16,8 @@ const COLLECTION_NAME string = "task_store"
 
 // MongoDBConfig is the config structure holding information about mongo db.
 type MongoDBConfig struct {
-	HostName string
-	Port     int
-	Db       string
-	Username *string
-	Password *string
+	ConnectionUrl string
+	Db string
 }
 
 // MongoDBStorage is the structure responsible for handling mongo storage.
@@ -38,33 +35,16 @@ func NewMongoDBStorage(config MongoDBConfig) *MongoDBStorage {
 
 // Connect creates the database file.
 func (mongodb *MongoDBStorage) Connect() error {
-	var myclient *mongo.Client
+	var client *mongo.Client
 
-	if (mongodb.config.Username == nil) && (mongodb.config.Password == nil) {
-		client, err := mongo.NewClient(fmt.Sprintf("mongodb://%s:%d/%s",
-			mongodb.config.HostName, mongodb.config.Port,
-			mongodb.config.Db))
-
-		if err != nil {
-			return err
-		}
-		myclient = client
-	} else if (mongodb.config.Username != nil) && (mongodb.config.Password != nil) {
-		client, err := mongo.NewClient(fmt.Sprintf("mongodb://%s:%s@%s:%d/%s",
-			*mongodb.config.Username, *mongodb.config.Password,
-			mongodb.config.HostName, mongodb.config.Port,
-			mongodb.config.Db))
-
-		if err != nil {
-			return err
-		}
-		myclient = client
-	} else {
-		return errors.New("username or password empty")
+	client, err := mongo.NewClient(mongodb.config.ConnectionUrl)
+	if err != nil {
+		return err
 	}
-
-	mongodb.client = myclient
-	err := mongodb.client.Connect(context.TODO())
+	
+	mongodb.client = client
+	err = mongodb.client.Connect(context.TODO())
+	
 	return err
 }
 
@@ -75,7 +55,8 @@ func (mongodb *MongoDBStorage) Close() error {
 
 // Initialize mongodb collection
 func (mongodb *MongoDBStorage) Initialize() error {
-	task_store := mongodb.client.Database(mongodb.config.Db).Collection(COLLECTION_NAME)
+	task_store := mongodb.client.
+		Database(mongodb.config.Db).Collection(COLLECTION_NAME)
 
 	if task_store == nil {
 		log.Printf("could not initialize collection")

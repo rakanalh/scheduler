@@ -19,9 +19,8 @@ const pass string = ""
 
 var mongoStorage *TMongoStorage = &TMongoStorage{}
 var mongoConfig MongoDBConfig = MongoDBConfig{
-	HostName: "127.0.0.1",
-	Port:     27017,
-	Db:       "test_tasks",
+	ConnectionUrl: "mongodb://localhost/test",
+	Db:            "test",
 }
 
 var sampleTask = TaskAttributes{
