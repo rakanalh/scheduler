@@ -24,7 +24,7 @@ func main() {
 			Db:       "dbname",
 		},
 	)
-	
+
 	if err := storage.Connect(); err != nil {
 		log.Fatal("Could not connect to db", err)
 	}
