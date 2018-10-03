@@ -1,4 +1,6 @@
-// Package scheduler is a small library that you can use within your application that enables you to execute callbacks (goroutines) after a pre-defined amount of time. GTS also provides task storage which is used to invoke callbacks for tasks which couldn’t be executed during down-time as well as maintaining a history of the callbacks that got executed.
+// Package scheduler is a small library that you can use within your application that enables you to execute callbacks (goroutines) after a pre-defined amount of time.
+// GTS also provides task storage which is used to invoke callbacks for tasks which couldn’t be executed during down-time as well
+// as maintaining a history of the callbacks that got executed.
 package scheduler
 
 import (
@@ -9,8 +11,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/dmitescu/scheduler/storage"
-	"github.com/dmitescu/scheduler/task"
+	"github.com/rakanalh/scheduler/storage"
+	"github.com/rakanalh/scheduler/task"
 )
 
 // Scheduler is used to schedule tasks. It holds information about those tasks
