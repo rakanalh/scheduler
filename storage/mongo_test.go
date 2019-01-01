@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/mongodb/mongo-go-driver/bson"
+	"github.com/mongodb/mongo-go-driver/x/bsonx"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,7 +44,7 @@ func (s *TMongoStorage) Init(config MongoDBConfig, t *testing.T) {
 		_, err = s.storage.client.Database(config.Db).
 			Collection(COLLECTION_NAME).
 			DeleteMany(context.Background(),
-				bson.NewDocument())
+				bsonx.Doc{})
 		require.NoError(t, err)
 		s.uninit = sync.Once{}
 	})
