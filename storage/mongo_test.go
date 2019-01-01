@@ -21,7 +21,7 @@ const pass string = ""
 
 var mongoStorage *TMongoStorage = &TMongoStorage{}
 var mongoConfig MongoDBConfig = MongoDBConfig{
-	ConnectionUrl: "mongodb://localhost/test",
+	ConnectionUrl: "mongodb://localhost:32772/test",
 	Db:            "test",
 }
 
@@ -43,8 +43,7 @@ func (s *TMongoStorage) Init(config MongoDBConfig, t *testing.T) {
 		require.NoError(t, err)
 		_, err = s.storage.client.Database(config.Db).
 			Collection(COLLECTION_NAME).
-			DeleteMany(context.Background(),
-				bsonx.Doc{})
+			DeleteMany(context.Background(), bsonx.Doc{})
 		require.NoError(t, err)
 		s.uninit = sync.Once{}
 	})
@@ -70,9 +69,10 @@ func TestFetch(t *testing.T) {
 	fetchTask := sampleTask
 	fetchTask.Hash = "C"
 
-	err := mongoStorage.storage.Add(fetchTask)
-	require.NoError(t, err)
+	errAdd := mongoStorage.storage.Add(fetchTask)
+	require.NoError(t, errAdd)
 	tasks, err := mongoStorage.storage.Fetch()
+	require.NoError(t, err)
 
 	var found bool = false
 	for _, v := range tasks {

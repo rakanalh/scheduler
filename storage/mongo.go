@@ -137,8 +137,8 @@ func (mongodb MongoDBStorage) Fetch() ([]TaskAttributes, error) {
 	defer cur.Close(context.Background())
 
 	for cur.Next(context.Background()) {
-		elem := bsonx.Doc{}
-		err := cur.Decode(elem)
+		var elem bsonx.Doc
+		err := cur.Decode(&elem)
 		if err != nil {
 			log.Println(err.Error())
 			return nil, err
