@@ -1,2 +1,4 @@
 *.db
 *.out
+vendor
+coverage.txt

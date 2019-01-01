@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/mongodb/mongo-go-driver/bson"
 	"github.com/mongodb/mongo-go-driver/mongo"
+	"github.com/mongodb/mongo-go-driver/x/bsonx"
 )
 
 const COLLECTION_NAME string = "task_store"
@@ -17,7 +17,7 @@ const COLLECTION_NAME string = "task_store"
 // MongoDBConfig is the config structure holding information about mongo db.
 type MongoDBConfig struct {
 	ConnectionUrl string
-	Db string
+	Db            string
 }
 
 // MongoDBStorage is the structure responsible for handling mongo storage.
@@ -41,10 +41,10 @@ func (mongodb *MongoDBStorage) Connect() error {
 	if err != nil {
 		return err
 	}
-	
+
 	mongodb.client = client
 	err = mongodb.client.Connect(context.TODO())
-	
+
 	return err
 }
 
@@ -74,7 +74,8 @@ func (mongodb MongoDBStorage) Add(task TaskAttributes) error {
 		return errors.New("could not get collection")
 	}
 
-	filter := bson.NewDocument(bson.EC.String("hash", task.Hash))
+	// filter := bson.NewDocument(bson.EC.String("hash", task.Hash))
+	filter := bsonx.Doc{{"hash", bsonx.String(task.Hash)}}
 	res, err := task_store.Count(context.Background(), filter)
 
 	if err != nil {
@@ -108,7 +109,8 @@ func (mongodb MongoDBStorage) Remove(task TaskAttributes) error {
 		return errors.New("could not get collection")
 	}
 
-	filter := bson.NewDocument(bson.EC.String("hash", task.Hash))
+	// filter := bson.NewDocument(bson.EC.String("hash", task.Hash))
+	filter := bsonx.Doc{{"hash", bsonx.String(task.Hash)}}
 
 	_, err := task_store.DeleteOne(context.Background(), filter)
 
@@ -135,7 +137,7 @@ func (mongodb MongoDBStorage) Fetch() ([]TaskAttributes, error) {
 	defer cur.Close(context.Background())
 
 	for cur.Next(context.Background()) {
-		elem := bson.NewDocument()
+		elem := bsonx.Doc{}
 		err := cur.Decode(elem)
 		if err != nil {
 			log.Println(err.Error())
