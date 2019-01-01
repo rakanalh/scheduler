@@ -21,7 +21,7 @@ const pass string = ""
 
 var mongoStorage *TMongoStorage = &TMongoStorage{}
 var mongoConfig MongoDBConfig = MongoDBConfig{
-	ConnectionUrl: "mongodb://localhost:32772/test",
+	ConnectionUrl: "mongodb://localhost/test",
 	Db:            "test",
 }
 
