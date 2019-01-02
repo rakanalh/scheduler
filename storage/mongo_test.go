@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/mongodb/mongo-go-driver/bson"
+	"github.com/mongodb/mongo-go-driver/x/bsonx"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,8 +43,7 @@ func (s *TMongoStorage) Init(config MongoDBConfig, t *testing.T) {
 		require.NoError(t, err)
 		_, err = s.storage.client.Database(config.Db).
 			Collection(COLLECTION_NAME).
-			DeleteMany(context.Background(),
-				bson.NewDocument())
+			DeleteMany(context.Background(), bsonx.Doc{})
 		require.NoError(t, err)
 		s.uninit = sync.Once{}
 	})
@@ -70,9 +69,10 @@ func TestFetch(t *testing.T) {
 	fetchTask := sampleTask
 	fetchTask.Hash = "C"
 
-	err := mongoStorage.storage.Add(fetchTask)
-	require.NoError(t, err)
+	errAdd := mongoStorage.storage.Add(fetchTask)
+	require.NoError(t, errAdd)
 	tasks, err := mongoStorage.storage.Fetch()
+	require.NoError(t, err)
 
 	var found bool = false
 	for _, v := range tasks {
