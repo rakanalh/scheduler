@@ -83,7 +83,7 @@ func (b *BoltDBStorage) Fetch() ([]TaskAttributes, error) {
 	getTask := func(b []byte) (TaskAttributes, error) {
 		var task TaskAttributes
 		d := bytes.NewBuffer(b)
-		if err := gob.NewDecoder(d).Decode(task); err != nil {
+		if err := gob.NewDecoder(d).Decode(&task); err != nil {
 			return TaskAttributes{}, fmt.Errorf("task decoding error : %s", err)
 		}
 		return task, nil
