@@ -139,6 +139,14 @@
   revision = "73f8eece6fdcd902c185bf651de50f3828bed5ed"
 
 [[projects]]
+  digest = "1:8fe1bf6222077787bf88db4eae509f1c910743be1b82e1a6a57444fe092fc4a5"
+  name = "go.etcd.io/bbolt"
+  packages = ["."]
+  pruneopts = ""
+  revision = "63597a96ec0ad9e6d43c3fc81e809909e0237461"
+  version = "v1.3.2"
+
+[[projects]]
   branch = "master"
   digest = "1:887074c37fcefc2f49b5ae9c6f9f36107341aec23185613d0e9f1ee81db7f94a"
   name = "golang.org/x/crypto"
@@ -153,6 +161,14 @@
   packages = ["semaphore"]
   pruneopts = ""
   revision = "37e7f081c4d4c64e13b10787722085407fe5d15f"
+
+[[projects]]
+  branch = "master"
+  digest = "1:4d6f20f5bc52af99569b1be5ea55d4e22646d5e022b92f2d3d75347628614734"
+  name = "golang.org/x/sys"
+  packages = ["unix"]
+  pruneopts = ""
+  revision = "afcc84fd7533758f95a6e93ae710aa945a0b7e73"
 
 [[projects]]
   digest = "1:5acd3512b047305d49e8763eef7ba423901e85d5dd2fd1e71778a0ea8de10bd4"
@@ -175,13 +191,13 @@
   input-imports = [
     "github.com/lib/pq",
     "github.com/mattn/go-sqlite3",
-    "github.com/mongodb/mongo-go-driver/bson",
     "github.com/mongodb/mongo-go-driver/mongo",
     "github.com/mongodb/mongo-go-driver/x/bsonx",
     "github.com/rakanalh/scheduler/storage",
     "github.com/rakanalh/scheduler/task",
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",
+    "go.etcd.io/bbolt",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
